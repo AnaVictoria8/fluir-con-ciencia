@@ -343,7 +343,7 @@ body.printpreview #printDoc{display:block;max-width:794px;margin:0 auto;backgrou
     </div>
     <a class="hbtn" href="maqueta3d.html">Maqueta 3D ↗</a>
     <a class="hbtn onlydesk" href="documento/documento_postulacion.html" target="_blank" rel="noopener">Documento de postulación</a>
-    <button class="hbtn" id="printBtn" type="button"><span class="hdesk">Descargar PDF</span><span class="hmob">PDF</span></button>
+    <a class="hbtn" id="printBtn" href="plano_fluir_con_ciencia.pdf?v=20261015-8" download="plano_fluir_con_ciencia.pdf" aria-label="Descargar PDF"><span class="hdesk">Descargar PDF</span><span class="hmob">PDF</span></a>
   </header>
 
   <div class="main">
@@ -879,7 +879,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();if(tourO
 window.addEventListener('resize',()=>{if(tourOn)stopTour();cancelCamera();fitTo(view.init,false);});
 const hint=document.getElementById('hint');
 setTimeout(()=>hint.classList.add('show'),700);setTimeout(()=>hint.classList.remove('show'),6500);
-document.getElementById('printBtn').onclick=()=>window.print();
 
 /* ======== Documento imprimible (una sola fuente de datos) ======== */
 function buildPrintDoc(){

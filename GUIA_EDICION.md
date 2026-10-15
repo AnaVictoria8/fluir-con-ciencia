@@ -60,12 +60,17 @@ No editar `plan2d-data.js` ni los SVG generados a mano. El comprobador detecta s
 - `?tour=1` — inicia el recorrido guiado automático
 - `?printpreview=1` — vista previa del documento imprimible
 
-## Regenerar los PDF (requiere Chrome, en el computador del proyecto)
+## Regenerar los PDF
+
+El botón «Descargar PDF» descarga el archivo directamente. Para actualizarlo después de regenerar el plano 2D, usar Node y Python con `reportlab`:
 
 ```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
-  --print-to-pdf=plano_fluir_con_ciencia.pdf --no-pdf-header-footer http://127.0.0.1:8765/mapa2d.html
+python3 tools/generate_plan_pdf.py
+```
 
+Para el documento de postulación (requiere Chrome):
+
+```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
   --print-to-pdf=documento/documento_postulacion.pdf --no-pdf-header-footer documento/documento_postulacion.html
 ```
@@ -76,7 +81,7 @@ No editar `plan2d-data.js` ni los SVG generados a mano. El comprobador detecta s
 |---|---|
 | `index.html` | Portada hacia el 3D y compatibilidad con enlaces 2D anteriores |
 | `mapa2d.html` | Plano 2D y fichas; impresión con la distribución vigente |
-| `plano_fluir_con_ciencia.pdf` | Versión anterior; usar «Descargar PDF» del 2D para obtener la vigente |
+| `plano_fluir_con_ciencia.pdf` | Plano y fichas vigentes; descarga directa desde el botón del 2D |
 | `documento/documento_postulacion.html` | Documento de postulación (texto editable) |
 | `documento/documento_postulacion.pdf` | Documento en PDF (incluye figura) |
 | `documento/documento_postulacion.docx` | Documento editable en Word (solo texto) |

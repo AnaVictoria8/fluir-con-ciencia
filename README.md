@@ -13,7 +13,7 @@
 |---|---|
 | `index.html` | Portada que abre directamente `maqueta3d.html`. Conserva los enlaces antiguos con parámetros hacia el 2D. |
 | `mapa2d.html` | Mapa interactivo 2D con datos locales compartidos. Incluye vista del sector de entrada y vista general, recorrido continuo 1→7 con pausa y velocidad, capas, fichas con demostraciones conceptuales, acceso a recursos oficiales y versión imprimible. |
-| `plano_fluir_con_ciencia.pdf` | PDF de una versión anterior. Para imprimir la distribución vigente, usar «Descargar PDF» en `mapa2d.html`. |
+| `plano_fluir_con_ciencia.pdf` | Plano y fichas con la distribución vigente; el botón «Descargar PDF» descarga este archivo directamente. |
 | `documento/documento_postulacion.html` | Documento de postulación: descripción detallada de la experiencia + guión museográfico preliminar. |
 | `documento/documento_postulacion.pdf` | El mismo documento en PDF (incluye la figura del plano). |
 | `documento/documento_postulacion.docx` | Versión editable para copiar/pegar en formularios (solo texto; la figura va en el PDF). |
@@ -58,7 +58,7 @@ Los textos y colores están en `assets/map-data.js`. La presentación del 2D est
 - `assets/garden-geometry.js`: proyección, recorte y geometría de senderos y lagunas compartidos.
 - `tools/generate_plan2d.mjs`: genera `assets/plan2d-data.js`, `assets/plano-sector.svg` y `assets/plano-general.svg` desde el modelo, sus obstáculos y la navegación. Las rutas se dibujan sin curvas que se salgan de los caminos. No editar los archivos generados a mano.
 - Las flechas del plano indican los frentes. Los stands 1–3 están frente a la casa; el 7 en el camino lateral; 4–6 antes de los baños, mirando hacia la laguna, igual que los baños.
-- Las fichas y la impresión usan los mismos datos. Los PDF y documentos de postulación guardados anteriormente son versiones previas; el plano vigente se imprime desde el 2D.
+- Las fichas y el PDF descargable usan los mismos datos. Los documentos de postulación guardados anteriormente son versiones previas.
 
 Después de modificar la distribución o el entorno:
 
@@ -73,10 +73,15 @@ El segundo comando detecta archivos generados desactualizados. El recorrido 2D c
 
 ## Regenerar los PDF
 
-```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
-  --print-to-pdf=plano_fluir_con_ciencia.pdf --no-pdf-header-footer http://127.0.0.1:8765/mapa2d.html
+El botón del plano 2D descarga `plano_fluir_con_ciencia.pdf` directamente, sin abrir la impresión. Tras regenerar el plano 2D, actualizar este archivo con Node y Python con `reportlab`:
 
+```bash
+python3 tools/generate_plan_pdf.py
+```
+
+La vista de impresión HTML se conserva para uso manual. El documento de postulación puede regenerarse con Chrome:
+
+```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
   --print-to-pdf=documento/documento_postulacion.pdf --no-pdf-header-footer documento/documento_postulacion.html
 ```
