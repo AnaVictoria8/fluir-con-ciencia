@@ -315,6 +315,7 @@ body.printpreview #printDoc{display:block;max-width:794px;margin:0 auto;backgrou
 
 
 /* Plano sincronizado: dejar espacio visible para la implantación. */
+.world .badge .dot{width:var(--badge-size,28px);height:var(--badge-size,28px);font-size:calc(var(--badge-size,28px)*.43)}
 .stand-front{fill:none;stroke:var(--c);stroke-width:2;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .map-intro .intro-paper{padding:10px 13px}.map-intro h2{font-size:20px}.map-intro p{display:none}
 .ctl-tr>.tourbtn{display:none}.journey-question{display:none}.journey{padding:10px 12px}.journey-title{font-size:14px;margin:5px 0 8px}
@@ -597,6 +598,9 @@ function clampCamera(c){
 function applayCam(){
   world.style.transform=`translate(${cam.x}px,${cam.y}px) scale(${cam.s})`;
   world.style.setProperty('--inv',(1/cam.s).toFixed(5));
+  // Los números conservan separación cuando el plano completo debe caber en poca altura.
+  const markerMax=window.innerWidth<=600?25:36;
+  world.style.setProperty('--badge-size',Math.max(20,Math.min(markerMax,cam.s*view.meterScale*4.5*.78))+'px');
   world.classList.toggle('nolbl',view.key==='general' && cam.s<.65);
   world.classList.toggle('general-overview',view.key==='general'&&cam.s<.65);
   scheduleLabels();
