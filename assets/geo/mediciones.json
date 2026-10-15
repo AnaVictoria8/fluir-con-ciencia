@@ -1,0 +1,203 @@
+{
+  "method": "Suma de segmentos geodésicos esféricos (haversine, radio medio 6371008.8 m).",
+  "accuracy": "Estimación cartográfica; no levantamiento topográfico. Decimales solo para reproducibilidad.",
+  "retrievedOn": "2026-10-14",
+  "paths": [
+    {
+      "osmWay": 44768721,
+      "source": "https://www.openstreetmap.org/way/44768721",
+      "lengthMeters": 409.21,
+      "endToEndMeters": 35.69,
+      "start": [
+        -71.6295492,
+        -35.4054155
+      ],
+      "end": [
+        -71.6298931,
+        -35.4052592
+      ]
+    },
+    {
+      "osmWay": 44768747,
+      "source": "https://www.openstreetmap.org/way/44768747",
+      "lengthMeters": 120.11,
+      "endToEndMeters": 67.15,
+      "start": [
+        -71.629391,
+        -35.4051666
+      ],
+      "end": [
+        -71.628716,
+        -35.4049177
+      ]
+    },
+    {
+      "osmWay": 44768748,
+      "source": "https://www.openstreetmap.org/way/44768748",
+      "lengthMeters": 34.46,
+      "endToEndMeters": 34.15,
+      "start": [
+        -71.6287704,
+        -35.4056893
+      ],
+      "end": [
+        -71.6287565,
+        -35.4053824
+      ]
+    },
+    {
+      "osmWay": 44768750,
+      "source": "https://www.openstreetmap.org/way/44768750",
+      "lengthMeters": 94.09,
+      "endToEndMeters": 87.43,
+      "start": [
+        -71.6303955,
+        -35.4057928
+      ],
+      "end": [
+        -71.6295492,
+        -35.4054155
+      ]
+    },
+    {
+      "osmWay": 44768751,
+      "source": "https://www.openstreetmap.org/way/44768751",
+      "lengthMeters": 112.88,
+      "endToEndMeters": 110.15,
+      "start": [
+        -71.6305786,
+        -35.4050165
+      ],
+      "end": [
+        -71.6302249,
+        -35.4040688
+      ]
+    },
+    {
+      "osmWay": 340137593,
+      "source": "https://www.openstreetmap.org/way/340137593",
+      "lengthMeters": 295.69,
+      "endToEndMeters": 100.02,
+      "start": [
+        -71.6291568,
+        -35.4048467
+      ],
+      "end": [
+        -71.6287704,
+        -35.4056893
+      ]
+    },
+    {
+      "osmWay": 340137594,
+      "source": "https://www.openstreetmap.org/way/340137594",
+      "lengthMeters": 338.24,
+      "endToEndMeters": 267.45,
+      "start": [
+        -71.6283416,
+        -35.4057709
+      ],
+      "end": [
+        -71.6302942,
+        -35.4039675
+      ]
+    },
+    {
+      "osmWay": 725218720,
+      "source": "https://www.openstreetmap.org/way/725218720",
+      "lengthMeters": 265.59,
+      "endToEndMeters": 231.93,
+      "start": [
+        -71.631515,
+        -35.4058339
+      ],
+      "end": [
+        -71.6289678,
+        -35.4060342
+      ]
+    },
+    {
+      "osmWay": 725218721,
+      "source": "https://www.openstreetmap.org/way/725218721",
+      "lengthMeters": 372.68,
+      "endToEndMeters": 214.01,
+      "start": [
+        -71.6291503,
+        -35.4061904
+      ],
+      "end": [
+        -71.6314951,
+        -35.4059631
+      ]
+    },
+    {
+      "osmWay": 725218722,
+      "source": "https://www.openstreetmap.org/way/725218722",
+      "lengthMeters": 148.2,
+      "endToEndMeters": 108.56,
+      "start": [
+        -71.6314918,
+        -35.4060524
+      ],
+      "end": [
+        -71.6311297,
+        -35.406983
+      ]
+    },
+    {
+      "osmWay": 725221052,
+      "source": "https://www.openstreetmap.org/way/725221052",
+      "lengthMeters": 76.08,
+      "endToEndMeters": 71.16,
+      "start": [
+        -71.6293286,
+        -35.4060494
+      ],
+      "end": [
+        -71.6296649,
+        -35.4066277
+      ]
+    },
+    {
+      "osmWay": 725221053,
+      "source": "https://www.openstreetmap.org/way/725221053",
+      "lengthMeters": 94.9,
+      "endToEndMeters": 91.2,
+      "start": [
+        -71.6294539,
+        -35.4060143
+      ],
+      "end": [
+        -71.6300311,
+        -35.4066861
+      ]
+    },
+    {
+      "osmWay": 725221054,
+      "source": "https://www.openstreetmap.org/way/725221054",
+      "lengthMeters": 15.39,
+      "endToEndMeters": 15.39,
+      "start": [
+        -71.6295249,
+        -35.4062686
+      ],
+      "end": [
+        -71.6294286,
+        -35.4063826
+      ]
+    },
+    {
+      "osmWay": 725221067,
+      "source": "https://www.openstreetmap.org/way/725221067",
+      "lengthMeters": 89.02,
+      "endToEndMeters": 62.07,
+      "start": [
+        -71.6309694,
+        -35.4053213
+      ],
+      "end": [
+        -71.6314084,
+        -35.4057497
+      ]
+    }
+  ]
+}
