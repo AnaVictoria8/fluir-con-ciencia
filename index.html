@@ -10,7 +10,9 @@
 // Conserva las fichas y vistas 2D compartidas antes de cambiar la portada.
 const params=new URLSearchParams(location.search);
 const legacy2D=['mod','view','tab','tour','printpreview'].some(key=>params.has(key));
-location.replace(new URL((legacy2D?'mapa2d.html':'maqueta3d.html')+location.search+location.hash,location.href).href);
+const target=new URL((legacy2D?'mapa2d.html':'maqueta3d.html')+location.search+location.hash,location.href);
+if(!legacy2D)target.searchParams.set('v','20261015-11');
+location.replace(target.href);
 </script>
 <style>body{font:16px system-ui,sans-serif;max-width:650px;margin:15vh auto;padding:24px;color:#183f38;background:#f2f6ef}a{color:#0e7c86;display:inline-block;margin:12px 24px 0 0}</style>
 </head>

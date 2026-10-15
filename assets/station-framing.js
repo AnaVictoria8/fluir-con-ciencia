@@ -1,11 +1,11 @@
 // Encuadre frontal de una estación y su visitante, con espacio para los controles.
-export function stationFrame({THREE,camera,stand,visitor,width,height,occluders=[]}){
+export function stationFrame({THREE,camera,stand,visitor,width,height,padding,occluders=[]}){
  const yaw=stand.rotation.y,front=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
  const points=[];
  for(const x of [-1.4,1.4])for(const z of [-1.4,1.4])for(const y of [0,2.85])points.push(new THREE.Vector3(x,y,z).applyAxisAngle(new THREE.Vector3(0,1,0),yaw).add(stand.position));
  for(const x of [-.4,.4])for(const z of [-.4,.4])for(const y of [0,2.25])points.push(visitor.clone().add(new THREE.Vector3(x,y,z)));
  const center=stand.position.clone().lerp(visitor,.5);center.y=1.3;
- const padding={left:20,right:20,top:Math.min(118,height*.22),bottom:Math.min(168,height*.29)};
+ padding??={left:20,right:20,top:Math.min(118,height*.22),bottom:Math.min(168,height*.29)};
  const safe={left:padding.left/width*2-1,right:1-padding.right/width*2,top:1-padding.top/height*2,bottom:padding.bottom/height*2-1};
  const safeCenter=new THREE.Vector2((safe.left+safe.right)/2,(safe.top+safe.bottom)/2);
  const trial=camera.clone();trial.clearViewOffset();trial.aspect=width/height;trial.updateProjectionMatrix();

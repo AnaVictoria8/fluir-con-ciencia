@@ -91,6 +91,10 @@ Para el documento de postulación (requiere Chrome):
 
 `assets/maqueta3d.js` define la escena. Las posiciones y orientaciones en metros locales están en `assets/garden-layout.js`; el 2D se genera desde esos mismos datos. `assets/garden-geometry.js` comparte la proyección y el recorte geográfico entre las vistas. Los senderos y lagunas proceden de `assets/geo/jardin_osm.geojson`; no se escalan a partir del plano ilustrado. El archivo `MEDIDAS_Y_FUENTES.md` distingue cifras institucionales, medidas cartográficas y dimensiones de diseño. Three.js 0.186.1 y su licencia están en `assets/vendor/three/`. Para probar el 3D se necesita servir la carpeta por HTTP.
 
+## Navegación móvil
+
+El mapa ocupa la pantalla y una tarjeta fija permite elegir los siete stands, escuchar el actual o iniciar el recorrido. «Leer stand» muestra el texto en una ficha desplazable; «Volver» regresa al mapa. Abrir la ficha pausa la visita automática. «Opciones» reúne las vistas, el zoom, las instrucciones y las flechas. La disposición está en `assets/mobile-navigation.js` y los estilos `.mobile-nav` de `assets/maqueta3d.css`; en escritorio se restauran los controles originales.
+
 ## Personaje y audioguía
 
 - Un único personaje de 1,70 m se mueve con flechas / WASD, controles táctiles o clic en el suelo. Elegir un módulo lo hace caminar hasta su frente. El recorrido automático utiliza el mismo personaje y conserva su posición al pausar.

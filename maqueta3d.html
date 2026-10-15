@@ -5,7 +5,7 @@
 <title>Fluir con-ciencia · Maqueta 3D del acceso</title>
 <meta name="description" content="Explora una propuesta de siete stands de agua en 3D, sobre senderos georreferenciados del Jardín Botánico UTalca.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Ccircle cx='15' cy='15' r='14' fill='%23087d76'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/maqueta3d.css?v=20261015-5">
+<link rel="stylesheet" href="assets/maqueta3d.css?v=20261015-11">
 <script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.js","three/addons/":"./assets/vendor/three/"}}</script>
 </head>
 <body>
@@ -14,7 +14,7 @@
  <section class="scene" id="scene" aria-label="Maqueta tridimensional interactiva">
   <div id="canvasHost"></div><div id="placeLabels" aria-label="Lugares del acceso"></div><div id="labels" aria-label="Seleccionar stands en 3D"></div><span id="avatarLabel" class="avatar-label" aria-hidden="true">Tú</span>
   <div class="intro"><span class="eyebrow">JARDÍN BOTÁNICO · UTALCA</span><h1>Camina la idea.</h1><p>Entra al jardín.<br>Descubre siete experiencias de agua.</p><span class="map-tag">Stands en la explanada del acceso</span></div>
-  <div class="view-controls" role="group" aria-label="Explorar el jardín"><button id="overview" class="on" aria-pressed="true">↗ Ver jardín</button><button id="centerVisitor" aria-pressed="false" aria-label="Centrar la cámara en mi personaje">◎ Centrarme</button><details class="more-views"><summary>Más vistas</summary><div><button id="entranceView" aria-pressed="false">Stands del acceso</button><button id="exteriorView" aria-pressed="false">⌂ Entrada exterior</button><button id="topView" aria-pressed="false">⊞ Desde arriba</button></div></details></div>
+  <div class="view-controls" role="group" aria-label="Explorar el jardín"><button id="overview" class="on" aria-pressed="true">↗ Ver jardín</button><button id="centerVisitor" aria-pressed="false" aria-label="Centrar la cámara en mi personaje">◎ Centrarme</button><details class="more-views"><summary><span class="desktop-label">Más vistas</span><span class="mobile-only">Opciones</span></summary><div><button id="entranceView" aria-pressed="false">Stands del acceso</button><button id="exteriorView" aria-pressed="false">⌂ Entrada exterior</button><button id="topView" aria-pressed="false">⊞ Desde arriba</button><details class="mobile-help mobile-only"><summary>Cómo moverme</summary><p>Toca el suelo o un número para caminar. Arrastra con un dedo para mirar. Pellizca con dos dedos para acercar o alejar. «Centrarme» vuelve a tu personaje.</p></details><details class="mobile-site-details mobile-only" id="mobileSiteDetails"><summary>Sobre el jardín y medidas</summary><div id="mobileExtras"></div></details></div></details></div>
   <div class="navigation-help" id="navigationHint"><span>Toca un lugar para caminar</span><span>Arrastra para mirar · rueda o pellizco para acercar</span><details><summary>Más controles</summary><p>Flechas o WASD para caminar. Arrastra con el botón derecho, Mayús o dos dedos para desplazar el mapa. Esc para detenerte.</p></details></div>
   <div class="tools"><button id="zoomIn" aria-label="Acercar">+</button><button id="zoomOut" aria-label="Alejar">−</button><button id="reset" aria-label="Restablecer vista">⌂</button></div>
   <div class="scene-note"><span class="live-dot"></span><span id="sceneStatus" role="status">Elige un lugar o un stand para empezar</span></div>
@@ -26,8 +26,10 @@
   <div id="fallback" class="fallback" hidden><h2>No se pudo iniciar la vista 3D</h2><p>Esta vista necesita WebGL y sus archivos locales. Puedes continuar explorando la propuesta en el mapa.</p><a href="mapa2d.html">Abrir el mapa 2D</a><button id="retry">Volver a intentar</button></div>
   <div class="attribution">Base de senderos y lagunas: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · anchos interpretados · implantación propuesta</div>
  </section>
- <aside id="infoPanel">
-  <div class="selected-header"><span id="moduleNumber">01</span><div><small>ESTACIÓN DEL AGUA</small><h2 id="moduleTitle">El viaje del agua</h2></div></div>
+ <button class="module-backdrop" id="moduleBackdrop" aria-label="Cerrar ficha y volver al mapa" hidden></button>
+ <aside id="infoPanel" aria-label="Información del stand">
+  <div id="moduleDock"><div class="selected-header"><span id="moduleNumber">01</span><div><small>ESTACIÓN DEL AGUA</small><h2 id="moduleTitle">El viaje del agua</h2></div><button id="toggleModule" class="mobile-only" aria-expanded="false" aria-controls="moduleDetails">Leer stand ↑</button></div><div class="mobile-stations mobile-only" id="mobileStations"></div><div class="mobile-actions mobile-only" id="mobileActions"></div></div>
+  <div id="moduleDetails">
   <p class="module-location" id="moduleLocation"></p>
   <p class="question" id="moduleQuestion"></p><p id="moduleInteraction" class="interaction"></p>
   <section class="audio-card" aria-label="Audioguía del stand"><div class="audio-heading"><h3>Escucha esta estación</h3><span>ESPAÑOL</span></div><div class="audio-buttons"><button id="audioPlay">▶ Escuchar resumen</button><button id="audioPause" disabled>Ⅱ Pausar</button><button id="audioStop" disabled aria-label="Detener narración">■</button></div><p id="audioStatus" role="status">Preparando las voces disponibles…</p><label class="audio-auto"><input id="autoNarrate" type="checkbox"> Escuchar al llegar a cada stand</label><details><summary>Voz y texto del audio</summary><label for="audioVoice">Voz de la audioguía</label><select id="audioVoice" aria-label="Voz de la audioguía"></select><p class="voice-note">Audio incluido en español latino. Voz chilena si tu dispositivo la ofrece.</p><p id="audioTranscript"></p></details></section>
@@ -39,11 +41,12 @@
   <section class="measure-card"><div><h3>¿Cuánto espacio hay?</h3><button id="measure" aria-pressed="false">↔ Medir</button></div><p id="measureResult" role="status">Marca dos puntos del suelo para estimar su separación horizontal.</p><button id="clearMeasure" hidden>Limpiar medición</button></section>
   <details class="sources"><summary>Qué está a escala y de dónde viene</summary><p>Los senderos y las lagunas usan coordenadas de OpenStreetMap. Las posiciones de los stands son una propuesta; su huella de 2,5 × 2,5 m y la persona de 1,70 m son dimensiones de diseño.</p><p>La casa, la caseta, los baños, el letrero, los postes de madera, el cerco verde, las bancas y el ambiente vegetal se interpretan a partir del tour 360° y fotografías del jardín. Sus dimensiones y posiciones son aproximadas.</p><a href="https://interactive.utalca.cl/pbotanico/Tour_Jbotanico_v2/" target="_blank" rel="noopener">Comparar con el jardín real · tour 360° ↗</a><a href="https://www.vinculacion.utalca.cl/assets/jb/mapadigital/mapa_digital_jardin_botanico_y_aboretum.pdf" target="_blank" rel="noopener">Ver plano oficial del jardín ↗</a><p>Referencias cartográficas completas: senderos de aproximadamente 266, 373 y 148 m. No representan la longitud del circuito de stands.</p><a href="MEDIDAS_Y_FUENTES.md" target="_blank" rel="noopener">Ver mediciones, método y fuentes ↗</a><a href="https://www.utalca.cl/vinculacion/jardin-botanico-y-arboretum/" target="_blank" rel="noopener">UTalca: 13 ha publicadas ↗</a></details>
   <p class="caption">Equipo Espacio DTC+ · dos monitores por stand.<br>Entorno interpretado del jardín real.<br>Caminos y explanada de tierra interpretados de referencias.<br>Las ubicaciones y circulaciones se validan en terreno.</p>
+  </div>
  </aside>
 </main>
 <script src="assets/map-data.js?v=20261015-7"></script>
 <script type="module">
-try { await import('./assets/maqueta3d.js?v=20261015-7'); }
+try { await import('./assets/maqueta3d.js?v=20261015-11'); }
 catch(error) { console.error(error); document.getElementById('loading').hidden=true;document.getElementById('fallback').hidden=false; }
 document.getElementById('retry').onclick=()=>location.reload();
 </script>

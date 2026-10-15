@@ -4,11 +4,13 @@ import { createNavigation } from './visitor-navigation.js?v=20261015-7';
 import { ACCESS_AREAS, STAND_LAYOUT, createWalkingSurface } from './garden-layout.js?v=20261015-7';
 import { ORIGIN, BOUNDS, project, buildGardenGeometry } from './garden-geometry.js?v=20261015-7';
 import { createAudioGuide } from './audio-guide.js';
-import { stationFrame } from './station-framing.js?v=20261015-7';
+import { stationFrame } from './station-framing.js?v=20261015-11';
+import { createMobileNavigation } from './mobile-navigation.js?v=20261015-11';
 import { createGardenMaterials, createGardenEnvironment } from './garden-environment.js?v=20261015-7';
 
 const {MODULES}=window.WATER_MAP_DATA;
 const host=document.getElementById('canvasHost'),container=document.getElementById('scene');
+let mobileUI=null;
 const reduced=matchMedia('(prefers-reduced-motion:reduce)');
 const scene=new THREE.Scene();scene.background=new THREE.Color('#dce7e4');scene.fog=new THREE.Fog('#dce7e4',180,340);
 const camera=new THREE.PerspectiveCamera(43,1,.08,400);
@@ -149,7 +151,7 @@ let panGesture=false;
 const measureRoot=new THREE.Group(),routeRoot=new THREE.Group();scene.add(measureRoot,routeRoot);
 const formatter=new Intl.NumberFormat('es-CL',{maximumFractionDigits:1});
 const FRONT=STAND_LAYOUT.map(({position:[x,z],yaw})=>[x+Math.sin(yaw)*2.5,z+Math.cos(yaw)*2.5]);
-const status=text=>document.getElementById('sceneStatus').textContent=text;
+const status=text=>{document.getElementById('sceneStatus').textContent=text;mobileUI?.notice();};
 function clearRoute(){routeRoot.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});routeRoot.clear();}
 function cancelWalking(){journey=null;manualWalking=false;keys.clear();padKeys.clear();document.querySelectorAll('[data-walk]').forEach(b=>b.classList.remove('pressed'));clearRoute();}
 function setMode(mode){container.classList.toggle('station-view',mode==='station');container.classList.toggle('inspection-view',mode==='station'||mode==='exteriorView');if(mode!=='station')stationFocus=null;document.querySelector('.more-views').open=false;['overview','entranceView','exteriorView','topView','centerVisitor'].forEach(id=>{const on=id===mode;document.getElementById(id).classList.toggle('on',on);document.getElementById(id).setAttribute('aria-pressed',on);});}
@@ -183,7 +185,7 @@ function setFollow(on,recenter=false){
 function followVisitor(){setFollow(true,true);}
 function frameStand(id,duration=1000){
  setFollow(false);setMode('station');stationFocus=id;scene.updateMatrixWorld(true);
- const frame=stationFrame({THREE,camera,stand:standGroups[id-1],visitor:avatar.position,width:container.clientWidth,height:container.clientHeight,occluders:[...standGroups.filter((_,i)=>i!==id-1),garden.buildings,trees]});
+ const frame=stationFrame({THREE,camera,stand:standGroups[id-1],visitor:avatar.position,width:container.clientWidth,height:container.clientHeight,padding:mobileUI?.matches?{left:18,right:18,top:92,bottom:24}:undefined,occluders:[...standGroups.filter((_,i)=>i!==id-1),garden.buildings,trees]});
  moveCamera(frame.position,frame.target,duration);
 }
 function arrived(id,frame=false){
@@ -199,40 +201,42 @@ function walkTo(to,id=null){
  journey={points,index:1,moduleId:id};followVisitor();if(id)container.classList.add('station-view','inspection-view');
  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(([x,z])=>new THREE.Vector3(x,.12,z))),new THREE.LineDashedMaterial({color:'#e2a236',dashSize:.5,gapSize:.35,transparent:true,opacity:.85}));line.computeLineDistances();routeRoot.add(line);
  status(id?`Caminando al stand ${id} · ${MODULES[id-1].nombre}`:'Caminando al punto que elegiste…');
- if(innerWidth<=800&&scrollY>container.offsetTop)container.scrollIntoView({block:'start',behavior:reduced.matches?'instant':'smooth'});
  return true;
 }
-function select(id){stopTour();setMeasureMode(false);showModule(id);walkTo(FRONT[id-1],id);}
+function select(id){mobileUI?.close();stopTour();setMeasureMode(false);showModule(id);walkTo(FRONT[id-1],id);}
 function stopTour(){
  const wasTour=tour;tour=false;tourPaused=false;tourElapsed=0;
  if(wasTour){cancelWalking();audio.cancel();}
  document.getElementById('tour3d').textContent='▶ Visita animada';document.getElementById('tour3d').setAttribute('aria-pressed','false');
 }
-function overview(){stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('overview');status('Toca un lugar o un stand para caminar');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-59:-38,narrow?65:34,narrow?68:40),new THREE.Vector3(0,0,1));}
-function entranceView(){stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('entranceView');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-72:-49,narrow?32:22,narrow?3:4),new THREE.Vector3(0,0,0));status('Acceso · casa a la izquierda y baños a la derecha');}
-function exteriorView(){stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('exteriorView');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-40:-29,narrow?4.8:3.8,narrow?-4:-2),new THREE.Vector3(-7,1,5));status('Entrada exterior · placa de piedra, zócalos y empalizada de madera');}
+function overview(){mobileUI?.close();stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('overview');status('Toca un lugar o un stand para caminar');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-59:-38,narrow?65:34,narrow?68:40),new THREE.Vector3(0,0,1));}
+function entranceView(){mobileUI?.close();stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('entranceView');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-72:-49,narrow?32:22,narrow?3:4),new THREE.Vector3(0,0,0));status('Acceso · casa a la izquierda y baños a la derecha');}
+function exteriorView(){mobileUI?.close();stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('exteriorView');const narrow=container.clientWidth<600;moveCamera(new THREE.Vector3(narrow?-40:-29,narrow?4.8:3.8,narrow?-4:-2),new THREE.Vector3(-7,1,5));status('Entrada exterior · placa de piedra, zócalos y empalizada de madera');}
 function focusPlace(id){
- const p=garden.places.find(p=>p.id===id);if(!p)return;
+ mobileUI?.close();const p=garden.places.find(p=>p.id===id);if(!p)return;
  stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('place');
  const position=new THREE.Vector3(...p.camera),target=new THREE.Vector3(...p.target);
  if(container.clientWidth<600)position.sub(target).multiplyScalar(1.6).add(target);
  moveCamera(position,target);status(p.name+' · referencia del acceso');
- if(innerWidth<=800)container.scrollIntoView({block:'start',behavior:reduced.matches?'instant':'smooth'});
 }
 const placeNodes=garden.places.map(p=>{
  const button=document.createElement('button');button.className='place-label';button.dataset.place=p.id;button.textContent=p.icon+' '+p.name;button.setAttribute('aria-label','Ver '+p.name);button.onclick=()=>focusPlace(p.id);document.getElementById('placeLabels').appendChild(button);
  const shortcut=document.createElement('button');shortcut.textContent=p.icon+' '+p.name;shortcut.dataset.place=p.id;shortcut.onclick=()=>focusPlace(p.id);document.getElementById('placeShortcuts').appendChild(shortcut);return button;
 });
-document.getElementById('centerVisitor').onclick=()=>{setMeasureMode(false);followVisitor();status('Toca un lugar para caminar · arrastra para mirar alrededor');};
-function topView(){stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('topView');status('Vista superior · toca un lugar para caminar');moveCamera(new THREE.Vector3(3,container.clientWidth<600?115:85,1.01),new THREE.Vector3(3,0,1));}
+document.getElementById('centerVisitor').onclick=()=>{mobileUI?.close();setMeasureMode(false);followVisitor();status('Toca un lugar para caminar · arrastra para mirar alrededor');};
+function topView(){mobileUI?.close();stopTour();cancelWalking();setMeasureMode(false);setFollow(false);setMode('topView');status('Vista superior · toca un lugar para caminar');moveCamera(new THREE.Vector3(3,container.clientWidth<600?115:85,1.01),new THREE.Vector3(3,0,1));}
 function tourStep(){
  tourPhase='travel';tourElapsed=0;showModule(tourIndex+1);
  if(!walkTo(FRONT[tourIndex],tourIndex+1)){stopTour();status('No se encontró un camino libre. Puedes mover el personaje manualmente.');}
 }
+function setTourPaused(paused){
+ tourPaused=paused;document.getElementById('tour3d').textContent=paused?'▶ Continuar':'Ⅱ Pausar';document.getElementById('tour3d').setAttribute('aria-pressed',!paused);
+ if(paused){tween=null;audio.pause();status('Recorrido y personaje en pausa.');}
+ else{audio.resume();if(tourPhase==='dwell')frameStand(tourIndex+1);status(tourPhase==='travel'?`Caminando al stand ${tourIndex+1}…`:`Visitando el stand ${tourIndex+1}.`);}
+}
 function toggleTour(){
- if(tour){tourPaused=!tourPaused;document.getElementById('tour3d').textContent=tourPaused?'▶ Continuar':'Ⅱ Pausar';document.getElementById('tour3d').setAttribute('aria-pressed',!tourPaused);
-  if(tourPaused){tween=null;audio.pause();status('Recorrido y personaje en pausa.');}else{audio.resume();if(tourPhase==='dwell')frameStand(tourIndex+1);status(tourPhase==='travel'?`Caminando al stand ${tourIndex+1}…`:`Visitando el stand ${tourIndex+1}.`);}return;
- }
+ mobileUI?.close();
+ if(tour){setTourPaused(!tourPaused);return;}
  setMeasureMode(false);audio.cancel();cancelWalking();tour=true;tourPaused=false;tourIndex=0;tourElapsed=0;tourStep();
  if(tour){document.getElementById('tour3d').textContent='Ⅱ Pausar';document.getElementById('tour3d').setAttribute('aria-pressed','true');}
 }
@@ -265,6 +269,7 @@ for(const button of document.querySelectorAll('[data-walk]')){
 }
 const keyDirections={ArrowUp:'forward',w:'forward',W:'forward',ArrowDown:'back',s:'back',S:'back',ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right'};
 window.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&mobileUI?.dismiss()){e.preventDefault();return;}
  if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,textarea,[contenteditable=true]'))return;
  const direction=keyDirections[e.key];if(direction&&!measureMode){e.preventDefault();beginManual();keys.add(e.key);}
  if(e.key==='Escape'){setMeasureMode(false);stopTour();cancelWalking();audio.cancel();status('Personaje detenido · toca un lugar para continuar');}
@@ -289,7 +294,7 @@ renderer.domElement.addEventListener('pointerup',e=>{
  const p=raycaster.ray.intersectPlane(groundPlane,new THREE.Vector3());if(p){stopTour();walkTo([p.x,p.z]);}
 });
 function setMeasureMode(on){
- measureMode=on;document.getElementById('exitMeasure').hidden=!on;if(on&&innerWidth<=800)container.scrollIntoView({block:'start',behavior:reduced.matches?'instant':'smooth'});
+ measureMode=on;document.getElementById('exitMeasure').hidden=!on;if(on)mobileUI?.close();
  if(!on&&!measurePoints.length)document.getElementById('measureResult').textContent='Marca dos puntos del suelo para estimar su separación horizontal.';
  document.getElementById('measure').setAttribute('aria-pressed',on);renderer.domElement.style.cursor=on?'crosshair':'grab';controls.enableRotate=!on;controls.enablePan=!on;
  if(on){stopTour();cancelWalking();setFollow(false);clearMeasurement();status('Medición: elige dos puntos del suelo');}
@@ -305,6 +310,7 @@ renderer.domElement.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){
 document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();padKeys.clear();manualWalking=false;audio.pause();if(tour){tourPaused=true;tween=null;document.getElementById('tour3d').textContent='▶ Continuar';document.getElementById('tour3d').setAttribute('aria-pressed','false');}}});
 window.addEventListener('pagehide',()=>audio.cancel());
 function resize(){const w=container.clientWidth,h=container.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();if(stationFocus&&!journey&&!cameraInteracting)frameStand(stationFocus,300);}
+mobileUI=createMobileNavigation({container,onRead:()=>{if(tour&&!tourPaused)setTourPaused(true);}});
 new ResizeObserver(resize).observe(container);resize();showModule(1);overview();
 function moveVisitor(delta){
  let moved=0,dx=0,dz=0;
