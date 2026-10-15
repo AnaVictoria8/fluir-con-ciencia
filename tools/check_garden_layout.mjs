@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import * as THREE from '../assets/vendor/three/three.module.js';
 import {ACCESS_AREAS,STAND_LAYOUT,TOILET_LAYOUT,pathWidth,createWalkingSurface,insidePolygon,segmentDistance} from '../assets/garden-layout.js';
 import {createGardenEnvironment} from '../assets/garden-environment.js';
+import {buildGardenGeometry,BOUNDS} from '../assets/garden-geometry.js';
 import {createNavigation} from '../assets/visitor-navigation.js';
 
 // Las etiquetas y texturas no participan en la comprobación de geometría.
@@ -11,14 +12,10 @@ const context=new Proxy({},{get:()=>()=>{},set:()=>true});
 globalThis.document={createElement:()=>({width:512,height:512,getContext:()=>context})};
 const graphics={...THREE,TextureLoader:class{load(){return new THREE.Texture();}}};
 const geo=JSON.parse(await readFile(new URL('../assets/geo/jardin_osm.geojson',import.meta.url)));
-const origin={lat:-35.4058339,lon:-71.631515},bounds={xmin:-45,xmax:108,zmin:-68,zmax:138};
-const project=([lon,lat])=>[(lon-origin.lon)*Math.PI/180*6371008.8*Math.cos(origin.lat*Math.PI/180),-(lat-origin.lat)*Math.PI/180*6371008.8];
-const paths=geo.features.filter(f=>f.geometry.type==='LineString').map(f=>({osmWay:f.properties.osmWay,points:f.geometry.coordinates.map(project)}));
-const ponds=geo.features.filter(f=>f.properties.natural==='water').map(f=>f.geometry.coordinates[0].map(project));
-const segments=paths.flatMap(({osmWay,points})=>points.slice(1).map((b,i)=>({a:points[i],b,width:pathWidth(osmWay,points[i],b)})));
+const bounds=BOUNDS,{paths,ponds,segments}=buildGardenGeometry(geo);
 const sites=STAND_LAYOUT.map(s=>s.position),onSurface=createWalkingSurface(segments);
-const garden=createGardenEnvironment({THREE:graphics,scene:new THREE.Scene(),trees:new THREE.Group(),ponds,paths:paths.map(p=>p.points),sites,bounds,pathMaterial:new THREE.MeshStandardMaterial(),accessAreas:ACCESS_AREAS,onSurface});
-const nav=createNavigation({paths:paths.map(p=>p.points),ponds,sites,bounds,obstacles:garden.obstacles,onSurface});
+const garden=createGardenEnvironment({THREE:graphics,scene:new THREE.Scene(),trees:new THREE.Group(),ponds,paths,sites,bounds,pathMaterial:new THREE.MeshStandardMaterial(),accessAreas:ACCESS_AREAS,onSurface});
+const nav=createNavigation({paths,ponds,sites,bounds,obstacles:garden.obstacles,onSurface});
 const fronts=STAND_LAYOUT.map(({position:[x,z],yaw})=>[x+Math.sin(yaw)*2.5,z+Math.cos(yaw)*2.5]);
 for(const [i,[x,z]] of sites.entries()){
  // Toda la huella, no solo el centro, debe caber sobre la tierra representada.

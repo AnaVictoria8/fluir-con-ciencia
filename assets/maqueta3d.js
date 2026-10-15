@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/OrbitControls.js';
-import { createNavigation } from './visitor-navigation.js?v=20261015-5';
-import { ACCESS_AREAS, STAND_LAYOUT, pathWidth, createWalkingSurface } from './garden-layout.js?v=20261015-5';
+import { createNavigation } from './visitor-navigation.js?v=20261015-7';
+import { ACCESS_AREAS, STAND_LAYOUT, createWalkingSurface } from './garden-layout.js?v=20261015-7';
+import { ORIGIN, BOUNDS, project, buildGardenGeometry } from './garden-geometry.js?v=20261015-7';
 import { createAudioGuide } from './audio-guide.js';
-import { stationFrame } from './station-framing.js?v=20261015-5';
-import { createGardenMaterials, createGardenEnvironment } from './garden-environment.js?v=20261015-5';
+import { stationFrame } from './station-framing.js?v=20261015-7';
+import { createGardenMaterials, createGardenEnvironment } from './garden-environment.js?v=20261015-7';
 
 const {MODULES}=window.WATER_MAP_DATA;
 const host=document.getElementById('canvasHost'),container=document.getElementById('scene');
@@ -31,10 +32,6 @@ function mesh(geometry,mat,parent=scene){const m=new THREE.Mesh(geometry,mat);m.
 function box(w,h,d,x,y,z,mat,parent){const m=mesh(new THREE.BoxGeometry(w,h,d),mat,parent);m.position.set(x,y,z);return m;}
 function cylinder(rt,rb,h,x,y,z,mat,parent,segments=12){const m=mesh(new THREE.CylinderGeometry(rt,rb,h,segments),mat,parent);m.position.set(x,y,z);return m;}
 function sphere(r,x,y,z,mat,parent){const m=mesh(new THREE.SphereGeometry(r,12,8),mat,parent);m.position.set(x,y,z);return m;}
-// Metros locales: este (+x), sur (+z), origen en una intersección de senderos OSM.
-const ORIGIN={lat:-35.4058339,lon:-71.631515},R=6371008.8;
-const project=([lon,lat])=>[(lon-ORIGIN.lon)*Math.PI/180*R*Math.cos(ORIGIN.lat*Math.PI/180),-(lat-ORIGIN.lat)*Math.PI/180*R];
-const BOUNDS={xmin:-45,xmax:108,zmin:-68,zmax:138};
 const groundWidth=BOUNDS.xmax-BOUNDS.xmin,groundCenter=(BOUNDS.xmax+BOUNDS.xmin)/2;
 const ground=box(groundWidth,.65,206,groundCenter,-.365,35,material('#7d8265'));
 const floor=box(groundWidth-.2,.03,205.8,groundCenter,-.022,35,gardenMaterials.ground);
@@ -42,40 +39,17 @@ floor.castShadow=false;
 const backdrop=mesh(new THREE.PlaneGeometry(1200,1200),material('#eaf0e5'));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.72;backdrop.castShadow=false;
 const paths=new THREE.Group(),waters=new THREE.Group(),trees=new THREE.Group(),people=new THREE.Group(),staff=new THREE.Group(),standRoot=new THREE.Group();scene.add(paths,waters,trees,people,staff,standRoot);
 const pathMat=gardenMaterials.path;
-function clipSegment(a,b){
- let t0=0,t1=1;const dx=b[0]-a[0],dz=b[1]-a[1];
- for(const [p,q] of [[-dx,a[0]-BOUNDS.xmin],[dx,BOUNDS.xmax-a[0]],[-dz,a[1]-BOUNDS.zmin],[dz,BOUNDS.zmax-a[1]]]){
-  if(p===0){if(q<0)return null;continue;}const t=q/p;
-  if(p<0)t0=Math.max(t0,t);else t1=Math.min(t1,t);if(t0>t1)return null;
- }return [[a[0]+t0*dx,a[1]+t0*dz],[a[0]+t1*dx,a[1]+t1*dz]];
-}
-function clipPolygon(points){
- let p=points.slice();
- for(const [axis,value,sign] of [[0,BOUNDS.xmin,1],[0,BOUNDS.xmax,-1],[1,BOUNDS.zmin,1],[1,BOUNDS.zmax,-1]]){
-  const out=[];for(let i=0;i<p.length;i++){
-   const a=p[i],b=p[(i+1)%p.length],ina=(a[axis]-value)*sign>=0,inb=(b[axis]-value)*sign>=0;
-   if(ina)out.push(a);if(ina!==inb){const t=(value-a[axis])/(b[axis]-a[axis]);out.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);}
-  }p=out;if(!p.length)break;
- }return p;
-}
 const geo=await fetch('assets/geo/jardin_osm.geojson').then(r=>{if(!r.ok)throw Error('No se pudo cargar la cartografía');return r.json();});
-const localPaths=[],pathSegments=[],pondPolygons=[];
-for(const f of geo.features){
- const g=f.geometry;
- if(g.type==='LineString'){
-  const pts=g.coordinates.map(project);localPaths.push(pts);
-  for(let i=0;i<pts.length-1;i++){
-   const clipped=clipSegment(pts[i],pts[i+1]);if(!clipped)continue;const[a,b]=clipped,dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
-   const width=pathWidth(f.properties.osmWay,a,b);pathSegments.push({a,b,width,osmWay:f.properties.osmWay});
-   const strip=box(width,.045,len,(a[0]+b[0])/2,.014,(a[1]+b[1])/2,pathMat,paths);strip.rotation.y=Math.atan2(dx,dz);strip.castShadow=false;
-   for(const [x,z]of [a,b]){const join=cylinder(width/2,width/2,.045,x,.014,z,pathMat,paths,24);join.castShadow=false;}
-  }
- }else if(f.properties.natural==='water'){
-  const p=clipPolygon(g.coordinates[0].map(project));if(p.length<3)continue;pondPolygons.push(p);
-  const shape=new THREE.Shape(p.map(([x,z])=>new THREE.Vector2(x,-z)));
-  const pond=mesh(new THREE.ShapeGeometry(shape),gardenMaterials.water,waters);pond.rotation.x=-Math.PI/2;pond.position.y=.065;pond.castShadow=false;
-  const outline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(p.map(([x,z])=>new THREE.Vector3(x,.072,z))),new THREE.LineBasicMaterial({color:'#7e9273'}));waters.add(outline);
- }
+const {paths:localPaths,segments:pathSegments,ponds:pondPolygons}=buildGardenGeometry(geo);
+for(const {a,b,width}of pathSegments){
+ const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
+ const strip=box(width,.045,len,(a[0]+b[0])/2,.014,(a[1]+b[1])/2,pathMat,paths);strip.rotation.y=Math.atan2(dx,dz);strip.castShadow=false;
+ for(const [x,z]of [a,b]){const join=cylinder(width/2,width/2,.045,x,.014,z,pathMat,paths,24);join.castShadow=false;}
+}
+for(const p of pondPolygons){
+ const shape=new THREE.Shape(p.map(([x,z])=>new THREE.Vector2(x,-z)));
+ const pond=mesh(new THREE.ShapeGeometry(shape),gardenMaterials.water,waters);pond.rotation.x=-Math.PI/2;pond.position.y=.065;pond.castShadow=false;
+ const outline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(p.map(([x,z])=>new THREE.Vector3(x,.072,z))),new THREE.LineBasicMaterial({color:'#7e9273'}));waters.add(outline);
 }
 // Diseño alternativo en coordenadas locales. No son posiciones levantadas en terreno.
 const SITES=STAND_LAYOUT.map(s=>s.position);
@@ -195,7 +169,7 @@ function showModule(id){
  selection.position.x=p.x;selection.position.z=p.z;
  document.getElementById('moduleNumber').textContent=String(id).padStart(2,'0');document.getElementById('moduleNumber').style.background=m.color;
  document.getElementById('moduleTitle').textContent=m.nombre;document.getElementById('moduleLocation').textContent=STAND_LAYOUT[id-1].area;document.getElementById('moduleQuestion').textContent=m.pregunta;
- document.getElementById('moduleInteraction').textContent=m.interaccion;document.getElementById('moduleSheet').href=`index.html?mod=${id}`;
+ document.getElementById('moduleInteraction').textContent=m.interaccion;document.getElementById('moduleSheet').href=`mapa2d.html?mod=${id}`;
  labelNodes.forEach((el,i)=>{el.classList.toggle('active',i===id-1);el.setAttribute('aria-pressed',i===id-1);});
  document.querySelectorAll('#stationRail button').forEach(el=>el.setAttribute('aria-pressed',+el.dataset.id===id));audio.select(id);
 }

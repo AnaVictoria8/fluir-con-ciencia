@@ -1,4 +1,4 @@
-import { TOILET_LAYOUT } from './garden-layout.js?v=20261015-5';
+import { TOILET_LAYOUT } from './garden-layout.js?v=20261015-7';
 // Volúmenes interpretados de fotografías y del tour 360°, sin medidas de terreno.
 export function createGardenBuildings({THREE,parent,obstacles}){
  const root=new THREE.Group();root.name='Casa, caseta y baños del acceso';parent.add(root);

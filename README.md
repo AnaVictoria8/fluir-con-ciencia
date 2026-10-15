@@ -4,22 +4,24 @@
 
 ## Publicación
 
-- **Mapa interactivo:** https://anavictoria8.github.io/fluir-con-ciencia/
+- **Mapa interactivo principal (3D):** [Abrir la maqueta 3D](https://anavictoria8.github.io/fluir-con-ciencia/)
+- **Plano 2D actualizado:** [Abrir el plano 2D](https://anavictoria8.github.io/fluir-con-ciencia/mapa2d.html)
 
 ## Contenido del repositorio
 
 | Archivo | Descripción |
 |---|---|
-| `index.html` | Mapa interactivo 2D con datos locales compartidos. Incluye vista del sector de entrada y vista general, recorrido continuo 1→7 con pausa y velocidad, capas, fichas con demostraciones conceptuales, acceso a recursos oficiales y versión imprimible. |
-| `plano_fluir_con_ciencia.pdf` | Plano de la propuesta en PDF (generado desde `index.html`). |
+| `index.html` | Portada que abre directamente `maqueta3d.html`. Conserva los enlaces antiguos con parámetros hacia el 2D. |
+| `mapa2d.html` | Mapa interactivo 2D con datos locales compartidos. Incluye vista del sector de entrada y vista general, recorrido continuo 1→7 con pausa y velocidad, capas, fichas con demostraciones conceptuales, acceso a recursos oficiales y versión imprimible. |
+| `plano_fluir_con_ciencia.pdf` | PDF de una versión anterior. Para imprimir la distribución vigente, usar «Descargar PDF» en `mapa2d.html`. |
 | `documento/documento_postulacion.html` | Documento de postulación: descripción detallada de la experiencia + guión museográfico preliminar. |
 | `documento/documento_postulacion.pdf` | El mismo documento en PDF (incluye la figura del plano). |
 | `documento/documento_postulacion.docx` | Versión editable para copiar/pegar en formularios (solo texto; la figura va en el PDF). |
-| `assets/` | Mapa base (recortes del mapa oficial UTalca) y figura del plano. |
+| `assets/` | Geometría compartida, planos vectoriales generados, recursos y cartografía. Los recortes ilustrados originales se conservan como referencia. |
 
 ## Parámetros útiles del mapa interactivo
 
-Se pueden compartir vistas específicas con parámetros en la URL:
+El plano `mapa2d.html` admite estos parámetros (los enlaces antiguos desde la raíz siguen funcionando):
 
 - `?view=general` — vista general del jardín
 - `?mod=4` — abre la ficha del módulo 4
@@ -29,11 +31,11 @@ Se pueden compartir vistas específicas con parámetros en la URL:
 
 ## Maqueta 3D y medidas
 
-- `maqueta3d.html`: alternativa 3D con cámara libre, vistas de conjunto / superior / entrada, selección de siete stands, visita animada, un personaje de 1,70 m que camina y medición horizontal entre dos puntos.
+- `maqueta3d.html`: vista principal 3D con cámara libre, vistas de conjunto / superior / entrada, selección de siete stands, visita animada, un personaje de 1,70 m que camina y medición horizontal entre dos puntos.
 - `assets/garden-layout.js`: superficies de tierra y distribución compacta del acceso: tres stands frente a la casa, uno en el borde del ramal izquierdo y tres antes de los baños. Define anchos interpretados de caminos y las orientaciones de cada stand.
 - `assets/visitor-navigation.js`: navegación por una cuadrícula en metros, restringida a caminos y explanadas, con rutas que evitan áreas verdes, lagunas, construcciones y stands.
 - `assets/audio-guide.js`: resúmenes de las siete estaciones y lectura mediante las voces en español del navegador; prioriza `es-CL`, luego otras voces latinoamericanas. Incluye siete archivos MP3 en español latino de México (voz Paulina) como alternativa independiente de las voces del dispositivo. Si se ofrece una voz chilena, se prioriza; si esa voz falla, se usa el audio incluido. No requiere un servicio de pago.
-- `assets/maqueta3d.js` y `assets/maqueta3d.css`: escena y controles. Las ubicaciones propuestas en metros locales están en `SITES`; el origen corresponde a una intersección de senderos OSM.
+- `assets/maqueta3d.js` y `assets/maqueta3d.css`: escena y controles. Las ubicaciones propuestas en metros locales proceden de `STAND_LAYOUT` en `garden-layout.js`; el origen corresponde a una intersección de senderos OSM.
 - `assets/geo/jardin_osm.geojson`: copia de referencia de senderos, lagunas y ámbito cartográfico, con atribución y enlaces a los elementos originales.
 - `MEDIDAS_Y_FUENTES.md`: fuentes institucionales, longitudes calculadas, método y limitaciones. `python tools/medir_cartografia.py` reproduce los cálculos sin red.
 - `assets/vendor/three/`: Three.js 0.186.1 y OrbitControls, licencia MIT. La vista no descarga librerías desde terceros.
@@ -46,27 +48,34 @@ Toca o haz clic en el suelo o en un stand para caminar; la cámara sigue al pers
 
 Para probar ambas vistas, servir esta carpeta por HTTP, por ejemplo `python -m http.server 8765 --bind 127.0.0.1`, y abrir `http://127.0.0.1:8765/`. La opción 3D necesita WebGL y un servidor HTTP (también funciona en GitHub Pages).
 
-La base 3D utiliza coordenadas geográficas, mientras que la base 2D es un plano ilustrado sin escala. Las posiciones de los stands son propuestas en ambas vistas y no una transformación exacta entre ellas. No deben usarse como plano de ejecución sin validar el terreno.
+Las vistas 2D y 3D comparten la cartografía, las explanadas, las huellas y las orientaciones. El 2D es una proyección en planta del mismo modelo, con norte arriba. La vista general abarca el mismo recorte que la maqueta. Los edificios y anchos son interpretaciones visuales, no un levantamiento de terreno.
 
 ## Cómo editar
 
-Los datos compartidos por ambas vistas están en `assets/map-data.js`; `index.html` contiene la presentación y las interacciones del mapa 2D:
+Los textos y colores están en `assets/map-data.js`. La presentación del 2D está en `mapa2d.html` y la del 3D en `maqueta3d.html`.
 
-- `PROJECT` — nombre del proyecto y URL pública.
-- `MODULES` — textos de los 7 módulos (nombre, pregunta, mensaje, interacción, fichas) y posición en el mapa (`sx`, `sy`, en fracciones del mapa del sector).
-- `ARRIVAL`, `TOUR_LEGS` — llegadas en el camino y tramos del recorrido (incluido el regreso al acceso); `ROUTE` se deriva de ellos.
-- `ZONE`, `REFS` — dos áreas de implantación y etiquetas de referencia.
-- `DEMOS` — demostraciones conceptuales de las fichas (sin mediciones reales).
-- `RESOURCES` — tour 360° y mapa interactivo oficial, cargados solo al abrirlos.
+- `assets/garden-layout.js`: posiciones en metros, orientaciones, explanadas y anchos de caminos. Es la fuente común de implantación.
+- `assets/garden-geometry.js`: proyección, recorte y geometría de senderos y lagunas compartidos.
+- `tools/generate_plan2d.mjs`: genera `assets/plan2d-data.js`, `assets/plano-sector.svg` y `assets/plano-general.svg` desde el modelo, sus obstáculos y la navegación. Las rutas se dibujan sin curvas que se salgan de los caminos. No editar los archivos generados a mano.
+- Las flechas del plano indican los frentes. Los stands 1–3 están frente a la casa; el 7 en el camino lateral; 4–6 antes de los baños, mirando hacia la laguna, igual que los baños.
+- Las fichas y la impresión usan los mismos datos. Los PDF y documentos de postulación guardados anteriormente son versiones previas; el plano vigente se imprime desde el 2D.
 
-La distribución compacta reúne los módulos 1, 2, 3 y 7 en la pradera poniente y 4, 5 y 6 junto al camino oriente. Las huellas no están a escala: dimensiones, separación y ancho libre se validan en terreno. El recorrido automático dedica 8 segundos a cada estación y permite pausa, reanudación y cambio de velocidad. En móvil, el botón de módulos abre y cierra el panel. El movimiento se reduce si el sistema tiene activada esa preferencia.
-- Los mismos datos alimentan automáticamente las fichas del panel y el PDF imprimible.
+Después de modificar la distribución o el entorno:
+
+```bash
+node tools/generate_plan2d.mjs
+node tools/generate_plan2d.mjs --check
+node tools/check_garden_layout.mjs
+node tools/check_station_framing.mjs
+```
+
+El segundo comando detecta archivos generados desactualizados. El recorrido 2D conserva las pausas de 8 segundos, los controles de velocidad, las fichas y el panel móvil.
 
 ## Regenerar los PDF
 
 ```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
-  --print-to-pdf=plano_fluir_con_ciencia.pdf --no-pdf-header-footer index.html
+  --print-to-pdf=plano_fluir_con_ciencia.pdf --no-pdf-header-footer http://127.0.0.1:8765/mapa2d.html
 
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
   --print-to-pdf=documento/documento_postulacion.pdf --no-pdf-header-footer documento/documento_postulacion.html
@@ -74,7 +83,7 @@ La distribución compacta reúne los módulos 1, 2, 3 y 7 en la pradera poniente
 
 ## Créditos
 
-Mapa base: mapa oficial del **Jardín Botánico & Arboretum, Universidad de Talca** (uso referencial para esta propuesta; la ubicación definitiva de los módulos se ajustará junto al equipo del jardín). Esquema no a escala.
+Cartografía de senderos y lagunas: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Reconstrucción del acceso basada en referencias del **Jardín Botánico & Arboretum, Universidad de Talca**. La escala representa el modelo propuesto; las dimensiones interpretadas y la implantación deben validarse con el equipo del jardín.
 
 La vista 3D incorpora una reconstrucción visual del acceso basada en el tour 360° UTalca: letrero con base de hormigón, postes de madera irregulares, cerco verde, bancas, caminos de tierra y vegetación de distintos portes. Las vistas «Stands del acceso» y «Entrada exterior» muestran sus dos caras. La instalación se concentra en las explanadas de tierra del acceso. El recorte ampliado incluye las dos lagunas próximas completas. `assets/garden-environment.js` genera los objetos y las texturas localmente, con vegetación instanciada. Las posiciones del mobiliario y los árboles son aproximadas; sus fuentes y alcance están en `MEDIDAS_Y_FUENTES.md`. La navegación evita estos nuevos obstáculos y conserva libre el acceso.
 

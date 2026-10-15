@@ -1,4 +1,4 @@
-import { createGardenBuildings } from './garden-buildings.js?v=20261015-5';
+import { createGardenBuildings } from './garden-buildings.js?v=20261015-7';
 // Interpretación visual del tour 360° UTalca; posiciones del mobiliario aproximadas.
 // Senderos y agua conservan la cartografía OSM. Ver MEDIDAS_Y_FUENTES.md.
 export function createGardenMaterials(THREE,renderer){
@@ -105,8 +105,8 @@ export function createGardenEnvironment({THREE,scene,trees,ponds,paths,sites,bou
   instance('lilies',new THREE.CylinderGeometry(1,1,1,10,1,false,0,Math.PI*1.84),lily,[x,.07,z],[.22+random()*.23,.025,.3],[0,random()*6.28,0]);
   if(i%8===0)instance('flowers',sphere,flower,[x,.14,z],[.10,.09,.10]);
  }}
- for(const {geometry,material,parent,items}of batches.values()){
-  const m=new THREE.InstancedMesh(geometry,material,items.length);items.forEach((o,i)=>{dummy.position.set(...o.p);dummy.scale.set(...o.s);dummy.rotation.set(...o.rotation);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);});m.castShadow=true;m.receiveShadow=true;m.computeBoundingSphere();parent.add(m);
+ for(const [key,{geometry,material,parent,items}]of batches){
+  const m=new THREE.InstancedMesh(geometry,material,items.length);m.name=key;items.forEach((o,i)=>{dummy.position.set(...o.p);dummy.scale.set(...o.s);dummy.rotation.set(...o.rotation);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);});m.castShadow=true;m.receiveShadow=true;m.computeBoundingSphere();parent.add(m);
  }
  root.userData.landmarks=landmarks;return {root,obstacles,landmarks,places:buildings.places,buildings:buildings.root,treeCount:planted};
 }

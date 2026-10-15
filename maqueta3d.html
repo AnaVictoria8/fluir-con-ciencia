@@ -9,7 +9,7 @@
 <script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.js","three/addons/":"./assets/vendor/three/"}}</script>
 </head>
 <body>
-<header><a class="brand" href="index.html"><span class="drop">◒</span><span>Fluir con-ciencia<small>Gotas de vida · Jardín Botánico UTalca</small></span></a><nav aria-label="Opciones de visualización"><a href="index.html">Mapa 2D</a><a href="maqueta3d.html" aria-current="page">Maqueta 3D</a><a href="https://interactive.utalca.cl/pbotanico/Tour_Jbotanico_v2/" target="_blank" rel="noopener">Jardín 360° ↗</a></nav></header>
+<header><a class="brand" href="index.html"><span class="drop">◒</span><span>Fluir con-ciencia<small>Gotas de vida · Jardín Botánico UTalca</small></span></a><nav aria-label="Opciones de visualización"><a href="mapa2d.html">Mapa 2D</a><a href="maqueta3d.html" aria-current="page">Maqueta 3D</a><a href="https://interactive.utalca.cl/pbotanico/Tour_Jbotanico_v2/" target="_blank" rel="noopener">Jardín 360° ↗</a></nav></header>
 <main>
  <section class="scene" id="scene" aria-label="Maqueta tridimensional interactiva">
   <div id="canvasHost"></div><div id="placeLabels" aria-label="Lugares del acceso"></div><div id="labels" aria-label="Seleccionar stands en 3D"></div><span id="avatarLabel" class="avatar-label" aria-hidden="true">Tú</span>
@@ -23,7 +23,7 @@
   <div class="metric-key"><strong>2,5 × 2,5 m</strong><span>huella propuesta por stand</span><div class="key-line"></div><small>Tu personaje: 1,70 m</small></div>
   <div class="bottom-bar"><div class="station-rail" id="stationRail" aria-label="Módulos de la propuesta"></div><button class="play" id="tour3d" aria-pressed="false">▶ Visita animada</button></div>
   <div id="loading" class="loading" role="status"><div class="loading-drop">◒</div>Preparando la maqueta…</div>
-  <div id="fallback" class="fallback" hidden><h2>No se pudo iniciar la vista 3D</h2><p>Esta vista necesita WebGL y sus archivos locales. Puedes continuar explorando la propuesta en el mapa.</p><a href="index.html">Abrir el mapa 2D</a><button id="retry">Volver a intentar</button></div>
+  <div id="fallback" class="fallback" hidden><h2>No se pudo iniciar la vista 3D</h2><p>Esta vista necesita WebGL y sus archivos locales. Puedes continuar explorando la propuesta en el mapa.</p><a href="mapa2d.html">Abrir el mapa 2D</a><button id="retry">Volver a intentar</button></div>
   <div class="attribution">Base de senderos y lagunas: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · anchos interpretados · implantación propuesta</div>
  </section>
  <aside id="infoPanel">
@@ -33,7 +33,7 @@
   <section class="audio-card" aria-label="Audioguía del stand"><div class="audio-heading"><h3>Escucha esta estación</h3><span>ESPAÑOL</span></div><div class="audio-buttons"><button id="audioPlay">▶ Escuchar resumen</button><button id="audioPause" disabled>Ⅱ Pausar</button><button id="audioStop" disabled aria-label="Detener narración">■</button></div><p id="audioStatus" role="status">Preparando las voces disponibles…</p><label class="audio-auto"><input id="autoNarrate" type="checkbox"> Escuchar al llegar a cada stand</label><details><summary>Voz y texto del audio</summary><label for="audioVoice">Voz de la audioguía</label><select id="audioVoice" aria-label="Voz de la audioguía"></select><p class="voice-note">Audio incluido en español latino. Voz chilena si tu dispositivo la ofrece.</p><p id="audioTranscript"></p></details></section>
   <div class="dimensions"><div><strong>2,5 × 2,5</strong><span>metros de huella</span></div><div><strong>2,70 m</strong><span>altura de cubierta</span></div></div>
   <button class="primary" id="approach">Caminar a este stand →</button>
-  <a id="moduleSheet" class="text-link" href="index.html?mod=1">Ver ficha y guión del módulo →</a>
+  <a id="moduleSheet" class="text-link" href="mapa2d.html?mod=1">Ver ficha y guión del módulo →</a>
   <section class="place-card" aria-label="Referencias del acceso"><h3>Reconoce la entrada</h3><div id="placeShortcuts"></div><p>Tres stands frente a la casa y uno en el borde del camino izquierdo. Otros tres antes de los baños, con sus frentes hacia la laguna.</p></section>
   <details class="settings"><summary>Explorar el espacio</summary><div class="settings-body"><label><input id="showTrees" type="checkbox" checked> Árboles y vegetación</label><label><input id="showRoutes" type="checkbox" checked> Mostrar los senderos</label><label><input id="autoOrbit" type="checkbox"> Girar la maqueta lentamente</label></div></details>
   <section class="measure-card"><div><h3>¿Cuánto espacio hay?</h3><button id="measure" aria-pressed="false">↔ Medir</button></div><p id="measureResult" role="status">Marca dos puntos del suelo para estimar su separación horizontal.</p><button id="clearMeasure" hidden>Limpiar medición</button></section>
@@ -41,9 +41,9 @@
   <p class="caption">Equipo Espacio DTC+ · dos monitores por stand.<br>Entorno interpretado del jardín real.<br>Caminos y explanada de tierra interpretados de referencias.<br>Las ubicaciones y circulaciones se validan en terreno.</p>
  </aside>
 </main>
-<script src="assets/map-data.js"></script>
+<script src="assets/map-data.js?v=20261015-7"></script>
 <script type="module">
-try { await import('./assets/maqueta3d.js?v=20261015-6'); }
+try { await import('./assets/maqueta3d.js?v=20261015-7'); }
 catch(error) { console.error(error); document.getElementById('loading').hidden=true;document.getElementById('fallback').hidden=false; }
 document.getElementById('retry').onclick=()=>location.reload();
 </script>
