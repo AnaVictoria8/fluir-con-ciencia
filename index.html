@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluir con-ciencia, gotas de vida · Experiencias Hídricas en el Maule — Jardín Botánico UTalca</title>
+<meta name="description" content="Propuesta de distribución, recorrido e interacciones de 7 módulos interactivos sobre el agua en el sector de entrada del Jardín Botánico & Arboretum de la Universidad de Talca.">
+<style>
+:root{
+  --teal:#0e7c86; --teal-d:#0b5d66; --ink:#10343d; --ink-2:#2a4a52;
+  --aqua:#7fd4e8; --blue:#2b9fd8; --accent:#f29f05; --paper:#f4f8f9;
+  --line:#dbe7e9; --ok:#2e9e6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink); background:var(--paper); overflow:hidden;
+}
+.app{display:flex;flex-direction:column;height:100dvh}
+header.top{
+  display:flex;align-items:center;gap:14px;padding:10px 16px;color:#fff;z-index:40;
+  background:linear-gradient(100deg,var(--teal-d),var(--teal) 55%,#158d9e);
+  box-shadow:0 2px 10px rgba(9,60,66,.25)
+}
+.logo{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:0 0 auto}
+.logo svg{width:24px;height:24px}
+.titles{flex:1;min-width:0}
+.titles h1{margin:0;font-size:16.5px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.titles p{margin:1px 0 0;font-size:11.5px;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtn{
+  border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;
+  font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer;text-decoration:none;white-space:nowrap
+}
+.hbtn:hover{background:rgba(255,255,255,.22)}
+.hmob{display:none}
+@media (max-width:700px){
+  .hdesk{display:none}
+  .hmob{display:inline}
+}
+.main{flex:1;display:flex;min-height:0;position:relative}
+.stage{position:relative;flex:1;min-width:0;overflow:hidden;background:#dcecee;touch-action:none;cursor:grab}
+.stage.dragging{cursor:grabbing}
+.world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;--inv:1}
+.world img.base{position:absolute;inset:0;width:100%;height:100%;user-select:none;-webkit-user-drag:none;pointer-events:none;display:block}
+.overlay{position:absolute;inset:0}
+.overlay svg{position:absolute;left:0;top:0;overflow:visible}
+.badge{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));transform-origin:center;z-index:6;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.badge:focus{outline:none}
+.badge .dot{
+  width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid var(--c,#0e7c86);
+  color:var(--c,#0e7c86);display:grid;place-items:center;font-weight:800;font-size:15.5px;
+  box-shadow:0 3px 10px rgba(9,60,66,.35);position:relative
+}
+.badge .lbl{
+  position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:5px;
+  background:rgba(255,255,255,.95);color:var(--ink);font-size:11px;font-weight:700;
+  padding:2.5px 8px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 6px rgba(9,60,66,.22);
+  border:1px solid rgba(14,124,134,.18)
+}
+.badge.lbl-top .lbl{top:auto;bottom:100%;margin-top:0;margin-bottom:5px}
+.badge:hover .dot{transform:scale(1.08)}
+.world.nolbl .badge .lbl,.world.nolbl .ref{opacity:0;pointer-events:none}
+.badge .lbl,.ref{transition:opacity .2s}
+.badge.active .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 5px rgba(242,159,5,.28),0 3px 10px rgba(9,60,66,.35);animation:pulse 1.8s ease-in-out infinite}
+.badge.active .lbl{background:var(--accent);color:#fff;border-color:transparent}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 5px rgba(242,159,5,.30),0 3px 10px rgba(9,60,66,.35)}50%{box-shadow:0 0 0 9px rgba(242,159,5,.12),0 3px 10px rgba(9,60,66,.35)}}
+.ref{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));transform-origin:center;
+  font-size:10.5px;font-weight:600;color:#41565c;background:rgba(255,255,255,.86);
+  padding:2px 7px;border-radius:7px;border:1px solid rgba(65,86,92,.18);white-space:nowrap;z-index:4;pointer-events:none}
+.route{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:30 20;vector-effect:non-scaling-stroke;animation:flow 1.5s linear infinite}
+.route-halo{fill:none;stroke:rgba(255,255,255,.95);stroke-width:8;vector-effect:non-scaling-stroke}
+.route-end{fill:var(--accent);stroke:#fff;stroke-width:2}
+@keyframes flow{to{stroke-dashoffset:-50}}
+.zone{fill:rgba(14,124,134,.09);stroke:rgba(14,124,134,.55);stroke-width:2;stroke-dasharray:7 6;vector-effect:non-scaling-stroke}
+
+.mapui{position:absolute;z-index:12}
+.ctl-tr{top:12px;right:12px;display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+.vswitch{display:flex;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 12px rgba(9,60,66,.25);border:1px solid var(--line)}
+.vswitch button{border:0;background:#fff;color:var(--ink-2);font-size:12px;font-weight:600;padding:8px 12px;cursor:pointer}
+.vswitch button.on{background:var(--teal);color:#fff}
+.zoombox{display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 12px rgba(9,60,66,.25);border:1px solid var(--line)}
+.zoombox button{border:0;background:#fff;color:var(--ink-2);font-size:17px;font-weight:700;width:38px;height:36px;cursor:pointer}
+.zoombox button:hover{background:#eef6f7}
+.zoombox button+button{border-top:1px solid var(--line)}
+.tourbtn{border:0;background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;padding:10px 14px;border-radius:10px;cursor:pointer;box-shadow:0 3px 12px rgba(9,60,66,.3)}
+.tourbtn:hover{filter:brightness(1.05)}
+.tourbtn.on{background:#b4453a}
+.legend{left:12px;bottom:12px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:12px;
+  padding:10px 12px;font-size:11.5px;color:var(--ink-2);box-shadow:0 3px 12px rgba(9,60,66,.16);max-width:280px}
+.legend h4{margin:0 0 7px;font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--teal-d)}
+.legend .row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.legend .sym{flex:0 0 auto;width:34px;display:grid;place-items:center}
+.attr{right:12px;bottom:12px;font-size:10px;color:#4d636a;background:rgba(255,255,255,.85);padding:4px 8px;border-radius:8px;border:1px solid var(--line)}
+.hint{left:50%;top:12px;transform:translateX(-50%);background:rgba(16,52,61,.78);color:#fff;font-size:11.5px;
+  padding:6px 12px;border-radius:999px;pointer-events:none;opacity:0;transition:opacity .3s}
+.hint.show{opacity:1}
+
+.panel{width:392px;flex:0 0 auto;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;z-index:20}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto}
+.tabs button{flex:1;border:0;background:#fff;padding:12px 6px;font-size:12.5px;font-weight:700;color:#6b838a;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button.on{color:var(--teal-d);border-bottom-color:var(--teal)}
+.tabbody{overflow:auto;padding:14px;flex:1;min-height:0}
+.tabbody[hidden]{display:none}
+.mcard{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff}
+.mcard .mhead{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;background:#fbfdfd}
+.mcard .mhead:hover{background:#f2f9fa}
+.mcard .n{width:27px;height:27px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+.mcard .ic{width:26px;height:26px;flex:0 0 auto;color:var(--teal-d)}
+.mcard h3{font-size:13.5px;margin:0;flex:1;line-height:1.25}
+.mcard .chev{color:#9ab3b9;font-size:12px;transition:transform .2s}
+.mcard.open .chev{transform:rotate(180deg)}
+.mbody{display:none;padding:4px 13px 13px;font-size:12.8px;color:var(--ink-2);line-height:1.5}
+.mcard.open .mbody{display:block}
+.mbody .q{font-style:italic;color:var(--teal);font-weight:700;margin:6px 0 8px}
+.mbody p{margin:7px 0}
+.mbody b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-size:10.5px;font-weight:600;color:var(--teal-d);background:#e8f4f5;border:1px solid #cfe7e9;border-radius:999px;padding:3px 9px}
+.panel h2{font-size:15px;margin:2px 0 10px;color:var(--teal-d)}
+.panel .lead{font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.kv{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:10px;background:#fbfdfd}
+.kv h4{margin:0 0 7px;font-size:12.5px;color:var(--teal-d)}
+.kv ul{margin:0;padding-left:17px;font-size:12.4px;color:var(--ink-2);line-height:1.55}
+.kv li{margin:4px 0}
+.btnrow{display:flex;gap:8px;margin:6px 0 12px}
+.btnrow button{flex:1;border:1px solid var(--teal);background:#fff;color:var(--teal);font-weight:700;font-size:12.5px;padding:9px;border-radius:10px;cursor:pointer}
+.btnrow button.solid{background:var(--teal);color:#fff}
+.btnrow button:hover{filter:brightness(1.04)}
+.sheetbar{display:none}
+#sheetBtn{display:none}
+
+@media (max-width:980px){
+  .panel{position:absolute;left:0;right:0;bottom:0;width:auto;height:66dvh;border-left:0;border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;transform:translateY(102%);transition:transform .28s ease;box-shadow:0 -8px 30px rgba(9,60,66,.25)}
+  .panel.open{transform:none}
+  #sheetBtn{display:block;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:22;
+    border:0;background:var(--teal);color:#fff;font-weight:700;font-size:13px;padding:11px 18px;border-radius:999px;box-shadow:0 4px 14px rgba(9,60,66,.4);cursor:pointer}
+  .legend{max-width:210px;bottom:64px}
+  .attr{display:none}
+  .titles h1{font-size:14px}
+  .hbtn.onlydesk{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .route{animation:none}
+  .badge.active .dot{animation:none}
+}
+#printDoc{display:none}
+body.printpreview{overflow:auto}
+body.printpreview .app{display:none}
+body.printpreview #printDoc{display:block;max-width:794px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.15)}
+
+/* ======== Documento imprimible (PDF) ======== */
+.pdoc{padding:26px 30px;font-size:12px;color:var(--ink)}
+.pdoc header{border-bottom:4px solid var(--teal);padding-bottom:10px;margin-bottom:14px}
+.pdoc header h1{margin:0;font-size:21px;color:var(--teal-d)}
+.pdoc header p{margin:4px 0 0;font-size:12.5px;color:var(--ink-2)}
+.pdoc h2{font-size:14.5px;color:var(--teal-d);margin:16px 0 8px}
+.pdoc .pintro p{font-size:12.2px;line-height:1.55;color:var(--ink-2)}
+.pdoc .pintro b{color:var(--ink)}
+.pdocmap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:4px 0 8px}
+.pdocmap img{position:absolute;inset:0;width:100%;height:100%}
+.pdocmap .badge .dot{width:30px;height:30px;font-size:13px;border-width:2.5px;box-shadow:none}
+.pdocmap .badge .lbl{font-size:9.5px;padding:2px 6px;margin-top:4px;box-shadow:none;border:1px solid #a9c2c7}
+.pdocmap .badge.lbl-top .lbl{margin-bottom:4px}
+.pdocmap .ref{font-size:8.5px;padding:1.5px 5px;box-shadow:none;border:1px solid #c9d6d9}
+.pdocmap .badge:hover .dot{transform:none}
+.plegend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11px;color:var(--ink-2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fbfdfd}
+.plegend b{color:var(--teal-d)}
+.psec{margin-top:16px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf{border:1px solid var(--line);border-radius:10px;padding:10px 12px;break-inside:avoid;background:#fff}
+.pf-h{display:flex;align-items:center;gap:8px}
+.pf-n{width:22px;height:22px;border-radius:50%;color:#fff;display:inline-grid;place-items:center;font-size:11.5px;font-weight:800;flex:0 0 auto}
+.pf-ic{width:20px;height:20px;color:var(--teal-d);flex:0 0 auto}
+.pf-ic svg{width:20px;height:20px}
+.pf h4{margin:0;font-size:12.5px}
+.pf p{margin:5px 0;font-size:11.2px;line-height:1.5;color:var(--ink-2)}
+.pf b{color:var(--ink)}
+.pf-q{font-style:italic;color:var(--teal)!important;font-weight:700}
+.pf-chips{font-size:10px;color:#6b838a!important;border-top:1px dashed var(--line);padding-top:5px}
+.pdoc footer{margin-top:14px;border-top:1px solid var(--line);padding-top:9px;font-size:10.5px;color:#6b838a}
+.pdoc footer p{margin:3px 0}
+
+@media print{
+  body{overflow:visible;background:#fff}
+  .app{display:none!important}
+  #printDoc{display:block!important}
+  @page{size:A4 portrait;margin:10mm}
+  .pdoc{padding:0}
+  .route{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c3.4 4.3 6 7.2 6 10.4A6 6 0 1 1 6 13.4C6 10.2 8.6 7.3 12 3z" fill="#7fd4e8"/><path d="M9.5 13.6c0 1.7 1.2 3 2.9 3.2" stroke="#0b5d66" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
+    <div class="titles">
+      <h1 id="projName">Fluir con-ciencia, gotas de vida</h1>
+      <p>Experiencias Hídricas en el Maule · Sector de entrada, Jardín Botánico &amp; Arboretum UTalca</p>
+    </div>
+    <a class="hbtn onlydesk" href="documento/documento_postulacion.html" target="_blank" rel="noopener">Documento de postulación</a>
+    <button class="hbtn" id="printBtn" type="button"><span class="hdesk">Descargar PDF</span><span class="hmob">PDF</span></button>
+  </header>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <div class="world" id="world"></div>
+
+      <div class="mapui ctl-tr">
+        <div class="vswitch" role="group" aria-label="Vista del mapa">
+          <button id="vSector" class="on" type="button">Sector de entrada</button>
+          <button id="vGeneral" type="button">Vista general</button>
+        </div>
+        <button class="tourbtn" id="tourBtn" type="button">▶ Iniciar recorrido 1 → 7</button>
+        <div class="zoombox">
+          <button id="zin" type="button" aria-label="Acercar">+</button>
+          <button id="zout" type="button" aria-label="Alejar">−</button>
+          <button id="zreset" type="button" aria-label="Restablecer vista" style="font-size:13px">⌂</button>
+        </div>
+      </div>
+
+      <div class="mapui legend" aria-label="Leyenda">
+        <h4>Leyenda</h4>
+        <div class="row"><span class="sym"><span style="width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #0e7c86;display:inline-grid;place-items:center;font-size:11px;font-weight:800;color:#0e7c86">7</span></span><span><b>Módulo interactivo</b> (1 a 7, en orden de visita)</span></div>
+        <div class="row"><span class="sym"><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" stroke="#f29f05" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/></svg></span><span><b>Recorrido sugerido</b> (en bucle, inicio y fin en el acceso)</span></div>
+        <div class="row"><span class="sym"><svg width="30" height="16"><rect x="1" y="1" width="28" height="14" rx="4" fill="rgba(14,124,134,.12)" stroke="rgba(14,124,134,.6)" stroke-dasharray="4 3"/></svg></span><span><b>Zona de stands</b> (sector de entrada, costados del camino)</span></div>
+        <div class="row" style="margin-top:7px;color:#41565c"><span class="sym" aria-hidden="true">🚶</span><span>Los <b>ejes peatonales quedan libres</b> (ancho &gt; 3 m) y se mantiene el acceso a baños, administración y estacionamiento.</span></div>
+      </div>
+
+      <div class="mapui attr">Esquema referencial sobre mapa oficial Jardín Botánico &amp; Arboretum UTalca · no a escala</div>
+      <div class="mapui hint" id="hint">Arrastra para mover · usa + / − para acercar · toca un módulo para ver su ficha</div>
+    </div>
+
+    <aside class="panel" id="panel">
+      <button id="sheetBtn" type="button">Ver módulos 1 – 7</button>
+      <div class="sheetbar"></div>
+      <div class="tabs" role="tablist">
+        <button id="tabMods" class="on" type="button">Módulos 1 – 7</button>
+        <button id="tabRuta" type="button">Recorrido</button>
+        <button id="tabFicha" type="button">Ficha técnica</button>
+      </div>
+
+      <div class="tabbody" id="bodyMods">
+        <h2>Módulos interactivos</h2>
+        <p class="lead" style="margin-bottom:12px">Haz clic en un módulo del mapa o en una tarjeta para ver su guión preliminar: pregunta detonante, mensaje clave, interacción y aprendizaje.</p>
+        <div id="modList"></div>
+      </div>
+
+      <div class="tabbody" id="bodyRuta" hidden>
+        <h2>Recorrido de la experiencia</h2>
+        <p class="lead">El recorrido forma un <b>bucle de aproximadamente 250 m</b> que comienza y termina en la zona de acceso. Los 7 módulos se ubican <b>a los costados del camino</b>, dejando siempre libre el eje central de circulación peatonal (ancho útil mayor a 3 m), sin interferir con los flujos habituales del jardín ni con el acceso a baños, administración y estacionamiento.</p>
+        <div class="btnrow">
+          <button class="solid" id="tourBtn2" type="button">▶ Recorrer módulos</button>
+          <button id="resetTour" type="button">Reiniciar vista</button>
+        </div>
+        <div class="kv"><h4>Flujo de visita sugerido</h4><ul>
+          <li><b>Módulo 1 → 3:</b> se avanza por el sendero oriente del arroyo (ida), bordeando la pradera y la laguna del cisne.</li>
+          <li><b>Módulo 3 → 4:</b> se regresa por el mismo sendero y se cruza la plaza hacia el sector de servicios (baños).</li>
+          <li><b>Módulo 4 → 6:</b> se sigue el camino nororiente bordeando la laguna de juegos.</li>
+          <li><b>Módulo 6 → 7 → salida:</b> se retorna a la plaza; el módulo 7 (cierre y decisiones) queda junto a administración, a pasos de la salida.</li>
+        </ul></div>
+        <div class="kv"><h4>No interferencia del tránsito peatonal</h4><ul>
+          <li>Módulos adosados a los bordes del camino (franja de 2,5 m), nunca al centro.</li>
+          <li>Puntos de mayor afluencia (acceso, baños, administración) se mantienen despejados.</li>
+          <li>Se conservan rutas alternativas para visitantes que no participan de la experiencia.</li>
+          <li>Señalética de desvío suave y demarcación de la zona de stands.</li>
+        </ul></div>
+        <div class="kv"><h4>Aforo y rotación estimados</h4><ul>
+          <li>Grupos de hasta 20–25 visitantes por ciclo de recorrido.</li>
+          <li>Permanencia de 3 a 6 minutos por módulo; visita total ≈ 40 minutos.</li>
+          <li>Capacidad estimada: 150–200 visitantes/día (a ajustar con UTalca según horarios y eventos).</li>
+        </ul></div>
+      </div>
+
+      <div class="tabbody" id="bodyFicha" hidden>
+        <h2>Ficha técnica preliminar</h2>
+        <div class="kv"><h4>Emplazamiento</h4><ul>
+          <li>Zona de intervención: <b>sector de entrada</b> del Jardín Botánico &amp; Arboretum de la Universidad de Talca, en ambas riberas del camino de acceso y el arroyo.</li>
+          <li>Base cartográfica: mapa oficial del jardín (UTalca); ubicación de módulos referencial y ajustable en terreno.</li>
+        </ul></div>
+        <div class="kv"><h4>Dimensión de los módulos</h4><ul>
+          <li>Huella de <b>2,5 × 2,5 m</b> (≈ 6,25 m²) por módulo + franja de aproximación de 2 m.</li>
+          <li>Estructura modular, desmontable, apta para exterior (sol y lluvia), con cubierta de sombra.</li>
+          <li>Mesones de manipulación a 0,75–0,95 m de altura.</li>
+        </ul></div>
+        <div class="kv"><h4>Accesibilidad</h4><ul>
+          <li>Recorrido sin escalones; superficie compactada y antideslizante.</li>
+          <li>Espacio de maniobra para sillas de ruedas en cada módulo.</li>
+          <li>Señalética de alto contraste (español/inglés) y códigos QR con audiodescripción y lectura fácil.</li>
+        </ul></div>
+        <div class="kv"><h4>Sostenibilidad y operación</h4><ul>
+          <li>Circuitos de agua cerrados y reutilizados al interior de cada módulo.</li>
+          <li>Energía solar para módulos con electrónica (pantalla del módulo 7, contadores).</li>
+          <li>Materiales reciclados/reciclables; mantención semanal simple a cargo de monitores.</li>
+        </ul></div>
+        <div class="kv"><h4>Descripción textual del plano (accesibilidad)</h4><ul>
+          <li>La zona de stands se extiende frente al acceso principal: 3 módulos en el sendero poniente del arroyo (1, 2 y 3), 1 módulo junto al sector de baños (4), 2 módulos en el camino oriente junto a la laguna de juegos (5 y 6) y 1 módulo de cierre frente a administración (7).</li>
+        </ul></div>
+        <p class="lead" style="font-size:11.5px;color:#6b838a">Versión preliminar para postulación. Ilustración base: mapa oficial del Jardín Botánico &amp; Arboretum UTalca. La ubicación definitiva de los stands se ajustará en conjunto con el equipo del jardín.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="printDoc"></div>
+
+<script>
+"use strict";
+/* ======== CONFIG ======== */
+const PROJECT = {
+  nombre: "Fluir con-ciencia, gotas de vida: Experiencias Hídricas en el Maule",
+  sub: "Experiencias Hídricas en el Maule · Jardín Botánico & Arboretum · Universidad de Talca",
+  urlPublica: "https://anavictoria8.github.io/fluir-con-ciencia/"
+};
+/* El mapa de sector es un recorte del mapa general (px de la imagen general) */
+const SEC = {x0:1150, y0:750, w:1500, h:1000};
+
+const VIEWS = {
+  sector: {
+    key:"sector", img:"assets/sector_entrada.jpg", w:3000, h:2000,
+    px:(fx,fy)=>[fx*3000, fy*2000],
+    init:{x1:.06,y1:.10,x2:.85,y2:.80}
+  },
+  general: {
+    key:"general", img:"assets/mapa_general.jpg", w:3400, h:2250,
+    px:(fx,fy)=>[SEC.x0+fx*SEC.w, SEC.y0+fy*SEC.h],
+    init:null
+  }
+};
+
+const ICONS = {
+  ciclo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3 3.9 5.5 6.5 5.5 9.4a5.5 5.5 0 1 1-11 0C6.5 10 9 7.4 12 3.5z"/><path d="M9.2 12.9c0 1.5 1.1 2.8 2.6 3"/></svg>',
+  reparto:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v7a3 3 0 0 0 3 3h10"/><path d="M16 11l3 3-3 3"/><path d="M5 4h3M5 4H2"/><circle cx="19.5" cy="6.5" r="2"/><path d="M14 19h5"/></svg>',
+  lupa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/><path d="M10.5 7.6c1.7 2.1 3 3.4 3 4.8a3 3 0 1 1-6 0c0-1.4 1.3-2.7 3-4.8z" stroke-width="1.4"/></svg>',
+  campo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V10"/><path d="M12 10c-4.5 0-7-2.6-7.5-6.5C9 3.4 11.4 5.6 12 10z"/><path d="M12 13c4 0 6.4-2.2 7-5.5-4 .4-6.4 2.4-7 5.5z"/><path d="M8 21h8"/></svg>',
+  filtro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.2 7.6V18l-3.6 2v-8.4L4 4z"/><path d="M8.5 8h7"/></svg>',
+  ciclo2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9a8 8 0 0 1 13.6-3l2.4 2.4"/><path d="M20.5 4.5v4h-4"/><path d="M19.5 15a8 8 0 0 1-13.6 3L3.5 15.6"/><path d="M3.5 19.5v-4h4"/><path d="M12 9.8c1.4 1.8 2.5 3 2.5 4.3a2.5 2.5 0 1 1-5 0c0-1.3 1.1-2.5 2.5-4.3z" stroke-width="1.4"/></svg>',
+  decide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M12 5h6.5l2 2.2-2 2.2H12"/><path d="M12 12h-6.5l-2 2.2 2 2.2H12"/></svg>'
+};
+
+const MODULES = [
+ {id:1, color:"#2b9fd8", icon:ICONS.ciclo, sx:.300, sy:.480, lbl:"El viaje del agua",
+  nombre:"El viaje del agua", pregunta:"¿De dónde viene el agua que usamos?",
+  mensaje:"En el Maule el agua nace en la cordillera y llega hasta nosotros a través de un ciclo natural: precipitaciones, nieve, ríos, embalses, napas subterráneas y ecosistemas.",
+  interaccion:"Los visitantes manipulan una maqueta del ciclo del agua del Maule (cordillera–valle–costa) con bomba manual, nubes y compuertas: hacen llover, mueven el agua por el río y observan cómo se infiltra y se almacena.",
+  aprende:"Que el agua es un recurso finito y variable: su disponibilidad depende del ciclo hidrológico y de las estaciones.",
+  chips:["2,5 × 2,5 m","Maqueta con circuito cerrado","3 – 5 min","3–5 personas a la vez"]},
+ {id:2, color:"#2e9e6b", icon:ICONS.reparto, sx:.240, sy:.375, lbl:"El agua en el territorio",
+  nombre:"El agua en nuestro territorio", pregunta:"¿Alcanza el agua para todos?",
+  mensaje:"El agua de la cuenca se reparte entre consumo humano, agricultura y agroindustria, industria y ecosistemas. En el Maule la agricultura es la gran usuaria: repartir el agua es tomar decisiones.",
+  interaccion:"Una mesa de distribución con compuertas permite derivar el agua hacia cuatro destinos (ciudades, campo, agroindustria y ecosistemas). Un estanque indicador muestra cuánta agua queda según las decisiones del grupo.",
+  aprende:"Quiénes usan el agua en la región, cómo compiten por ella y qué criterios existen para distribuirla y priorizarla.",
+  chips:["2,5 × 2,5 m","Mesa de canales y compuertas","3 – 5 min"]},
+ {id:3, color:"#8c5bb8", icon:ICONS.lupa, sx:.210, sy:.285, lbl:"Detectives del agua",
+  nombre:"Detectives del agua", pregunta:"¿Cómo sabemos la calidad del agua?",
+  mensaje:"El agua transparente no siempre es agua segura. Para conocer su calidad hay que medir: pH, conductividad eléctrica y turbidez son pistas fundamentales.",
+  interaccion:"Tres estaciones de análisis comparan muestras (agua de río, de proceso y tratada): tiras reactivas y pH-metro, conductímetro y columna de turbidez. Cada visitante completa su ficha de detective.",
+  aprende:"Qué indican pH, conductividad y turbidez, cómo se miden y por qué la evidencia científica es la base para decidir los usos del agua.",
+  chips:["2,5 × 2,5 m","Mesón de laboratorio","5 – 8 min","Instrumental simple y seguro"]},
+ {id:4, color:"#c8552e", icon:ICONS.campo, sx:.525, sy:.505, lblPos:"top", lbl:"Del campo a la agroindustria",
+  nombre:"Del campo a la agroindustria", pregunta:"¿Dónde se usa el agua en la fruticultura?",
+  mensaje:"En el Maule frutas y viñas se cultivan y procesan con agua: riego, lavado, enfriado y limpieza. Cada etapa del proceso es una oportunidad de ahorro y reutilización.",
+  interaccion:"Los visitantes operan una línea frutícola simplificada (recepción, lavado, selección, embalaje y frío) con el desafío de completar el proceso usando la menor cantidad de agua, comparando estrategias como riego tecnificado, recirculación y limpieza en seco.",
+  aprende:"Qué es la huella hídrica de un producto local y cuáles son las oportunidades reales de ahorro en la agroindustria del Maule.",
+  chips:["2,5 × 2,5 m","Línea de proceso con controles","5 – 7 min","Contadores de agua visibles"]},
+ {id:5, color:"#0e7c86", icon:ICONS.filtro, sx:.605, sy:.505, lbl:"Transformar el agua",
+  nombre:"Transformar el agua", pregunta:"¿Cómo se trata el agua?",
+  mensaje:"Separar sólidos, sedimentar y filtrar permite retirar partículas del agua. Cada etapa tiene alcances y límites: no todo se puede quitar con lo mismo.",
+  interaccion:"Un tren de tratamiento transparente y escalonado (rejilla, sedimentación, filtro de arena y carbón) donde los visitantes vierten agua “de proceso” y observan cómo cambia en cada etapa, comparando entradas y salidas.",
+  aprende:"Los principios físicos del tratamiento (separación, sedimentación y filtración) y por qué tratar el agua es clave para cuidarla y reutilizarla.",
+  chips:["2,5 × 2,5 m","Columna demostrativa transparente","4 – 6 min","Circuito cerrado"]},
+ {id:6, color:"#1887b8", icon:ICONS.ciclo2, sx:.750, sy:.600, lbl:"Una nueva oportunidad",
+  nombre:"Una nueva oportunidad", pregunta:"¿Podemos reutilizar el agua?",
+  mensaje:"El agua usada en procesos puede tratarse y volver a usarse bajo condiciones de calidad controladas. Recircular reduce la demanda de agua nueva de la cuenca.",
+  interaccion:"Dos circuitos gemelos —uno de uso único y otro con tratamiento y recirculación— con bombas y medidores de nivel: los visitantes comparan cuánta agua nueva exige cada sistema y cuánta se ahorra.",
+  aprende:"Qué es el reúso del agua, qué condiciones de calidad exige y cómo la economía circular del agua aporta a la cuenca del Maule.",
+  chips:["2,5 × 2,5 m","Doble circuito con medidores","4 – 6 min"]},
+ {id:7, color:"#f29f05", icon:ICONS.decide, sx:.440, sy:.605, lbl:"El futuro: tú decides",
+  nombre:"El futuro del agua: tú decides", pregunta:"¿Qué haremos con el agua del Maule?",
+  mensaje:"El futuro hídrico de la región se construye con decisiones concretas: ahorrar, monitorear, tratar y reutilizar. Tu decisión cuenta.",
+  interaccion:"Un tablero de desafíos plantea escenarios reales (sequía, heladas, crecimiento productivo): cada visitante elige estrategias y vota con fichas o código QR; una pantalla muestra las consecuencias de las decisiones del grupo y se cierra con un mural de compromisos personales.",
+  aprende:"Sintetiza todo el recorrido y ejercita el pensamiento crítico y la corresponsabilidad ciudadana en la gestión del agua.",
+  chips:["2,5 × 2,5 m + pantalla","Votación y mural de compromisos","5 – 8 min","Energía solar"]}
+];
+
+const ROUTE = [
+ [.465,.635],[.455,.575],[.420,.545],[.385,.522],[.335,.502],[.295,.492],[.268,.442],[.263,.402],[.262,.372],[.243,.335],[.225,.302],[.212,.282],
+ [.224,.292],[.252,.318],[.262,.360],[.276,.410],[.292,.452],[.335,.488],[.385,.512],[.425,.535],[.462,.560],[.492,.548],[.518,.522],[.525,.505],
+ [.560,.492],[.588,.498],[.605,.505],[.645,.528],[.688,.552],[.728,.578],[.750,.600],
+ [.752,.645],[.730,.685],[.688,.710],[.632,.720],[.578,.708],[.542,.682],[.515,.650],[.478,.622],[.440,.605],
+ [.448,.625],[.465,.635]
+];
+
+const ZONE = [
+ [.140,.300],[.170,.220],[.320,.165],[.500,.190],[.600,.225],[.685,.310],[.780,.460],[.780,.600],
+ [.720,.685],[.630,.725],[.500,.725],[.360,.690],[.225,.600],[.150,.450]
+];
+
+const REFS = [
+ {x:.530, y:.400, t:"Baños"},
+ {x:.170, y:.805, t:"Estacionamiento E"},
+ {x:.325, y:.598, t:"Administración"},
+ {x:.525, y:.690, t:"Acceso / llegada y salida"},
+ {x:.598, y:.738, t:"Acceso de servicio (Huerto)"}
+];
+
+/* ======== SVG helpers ======== */
+function catmullPath(pts){
+  if(pts.length<3) return "M"+pts.map(p=>p.join(",")).join(" L");
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0 = pts[Math.max(0,i-1)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(pts.length-1,i+2)];
+    const c1 = [p1[0]+(p2[0]-p0[0])/6, p1[1]+(p2[1]-p0[1])/6];
+    const c2 = [p2[0]-(p3[0]-p1[0])/6, p2[1]-(p3[1]-p1[1])/6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
+/* ======== Builder (usado por el mapa vivo y la versión imprimible) ======== */
+function buildOverlay(container, view, opts){
+  opts = opts || {};
+  const interactive = opts.interactive !== false;
+  const inv = opts.invScale !== false;
+  container.querySelectorAll(".overlay").forEach(e=>e.remove());
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  container.appendChild(ov);
+  const W = view.w, H = view.h;
+  const P = (fx,fy)=>view.px(fx,fy);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("aria-hidden","true");
+
+  const zonePts = ZONE.map(p=>P(p[0],p[1]));
+  const zone = document.createElementNS("http://www.w3.org/2000/svg","path");
+  zone.setAttribute("d", catmullPath(zonePts)+" Z");
+  zone.setAttribute("class","zone");
+  svg.appendChild(zone);
+
+  const routePts = ROUTE.map(p=>P(p[0],p[1]));
+  const d = catmullPath(routePts);
+  const halo = document.createElementNS("http://www.w3.org/2000/svg","path");
+  halo.setAttribute("d", d); halo.setAttribute("class","route-halo");
+  const route = document.createElementNS("http://www.w3.org/2000/svg","path");
+  route.setAttribute("d", d); route.setAttribute("class","route");
+  svg.appendChild(halo); svg.appendChild(route);
+
+  MODULES.forEach(m=>{
+    const [x,y] = P(m.sx,m.sy);
+    const b = document.createElement("div");
+    b.className = "badge" + (m.lblPos==="top" ? " lbl-top" : "");
+    b.style.left = x+"px"; b.style.top = y+"px";
+    b.style.setProperty("--c", m.color);
+    b.dataset.id = m.id;
+    b.innerHTML = `<div class="dot">${m.id}</div><div class="lbl">${m.lbl}</div>`;
+    if(interactive){
+      b.tabIndex = 0;
+      b.setAttribute("role","button");
+      b.setAttribute("aria-label",`Módulo ${m.id}: ${m.nombre}`);
+      b.addEventListener("click", ()=>selectModule(m.id,{fromMap:true}));
+      b.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();selectModule(m.id,{fromMap:true});} });
+    } else {
+      b.style.cursor = "default";
+    }
+    if(!inv){ b.style.transform = "translate(-50%,-50%)"; }
+    ov.appendChild(b);
+  });
+
+  REFS.forEach(r=>{
+    const [x,y] = P(r.x,r.y);
+    const el = document.createElement("div");
+    el.className = "ref";
+    el.style.left = x+"px"; el.style.top = y+"px";
+    if(!inv) el.style.transform = "translate(-50%,-50%)";
+    el.textContent = r.t;
+    ov.appendChild(el);
+  });
+
+  ov.appendChild(svg);
+  return ov;
+}
+
+/* ======== Mapa vivo ======== */
+const stage = document.getElementById("stage");
+const world = document.getElementById("world");
+let view = VIEWS.sector;
+let cam = {x:0,y:0,s:1};
+let fitScale = 1;
+let tourTimer = null, tourIdx = 0, tourOn = false;
+
+function applayCam(){
+  world.style.transform = `translate(${cam.x}px,${cam.y}px) scale(${cam.s})`;
+  world.style.setProperty("--inv", (1/cam.s).toFixed(4));
+  const th = (view.key==="general") ? 0.55 : fitScale*0.95;
+  world.classList.toggle("nolbl", cam.s < th);
+}
+function sizeWorld(v){
+  world.style.width = v.w+"px";
+  world.style.height = v.h+"px";
+  world.style.background = "#eef6f7";
+}
+function setView(key, keep){
+  view = VIEWS[key];
+  sizeWorld(view);
+  world.innerHTML = "";
+  const img = document.createElement("img");
+  img.className = "base"; img.src = view.img; img.alt = "Mapa base del Jardín Botánico & Arboretum UTalca";
+  world.appendChild(img);
+  buildOverlay(world, view, {interactive:true, invScale:true});
+  if(!keep) fitTo(view.init);
+  else clampCam();
+}
+function fitTo(rect){
+  const vw = stage.clientWidth, vh = stage.clientHeight;
+  const W = view.w, H = view.h;
+  if(rect){
+    const rw = (rect.x2-rect.x1)*W, rh = (rect.y2-rect.y1)*H;
+    cam.s = Math.min(vw/rw, vh/rh)*.98;
+    const cx = (rect.x1+(rect.x2-rect.x1)/2)*W, cy = (rect.y1+(rect.y2-rect.y1)/2)*H;
+    cam.x = vw/2 - cx*cam.s; cam.y = vh/2 - cy*cam.s;
+  } else {
+    cam.s = Math.min(vw/W, vh/H)*.98;
+    cam.x = (vw-W*cam.s)/2; cam.y = (vh-H*cam.s)/2;
+  }
+  fitScale = cam.s;
+  clampCam(); applayCam();
+}
+function clampCam(){
+  const vw = stage.clientWidth, vh = stage.clientHeight;
+  const W = view.w*cam.s, H = view.h*cam.s;
+  const mx = Math.min(0, vw-W), my = Math.min(0, vh-H);
+  cam.x = W<=vw ? (vw-W)/2 : Math.min(0, Math.max(mx, cam.x));
+  cam.y = H<=vh ? (vh-H)/2 : Math.min(0, Math.max(my, cam.y));
+  cam.s = Math.min(cam.s, 6); cam.s = Math.max(cam.s, fitScale*.55);
+}
+function zoomAt(cx, cy, f){
+  const ns = Math.min(6, Math.max(fitScale*.55, cam.s*f));
+  const k = ns/cam.s;
+  cam.x = cx - k*(cx-cam.x);
+  cam.y = cy - k*(cy-cam.y);
+  cam.s = ns;
+  clampCam(); applayCam();
+}
+function panTo(fx, fy, s){
+  const vw = stage.clientWidth, vh = stage.clientHeight;
+  const [x,y] = view.px(fx,fy);
+  cam.s = s || cam.s;
+  cam.x = vw/2 - x*cam.s; cam.y = vh/2 - y*cam.s;
+  clampCam(); applayCam();
+}
+
+/* Pointer pan & pinch */
+const pointers = new Map();
+let lastMid = null, lastDist = 0, moved = false;
+stage.addEventListener("pointerdown", e=>{
+  if(e.target.closest(".mapui")) return;
+  stopTour();
+  stage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  moved = false;
+  if(pointers.size===1){ lastMid = {x:e.clientX,y:e.clientY}; stage.classList.add("dragging"); }
+  if(pointers.size===2){
+    const [a,b] = [...pointers.values()];
+    lastMid = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+    lastDist = Math.hypot(a.x-b.x, a.y-b.y);
+  }
+});
+stage.addEventListener("pointermove", e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){
+    const p = pointers.get(e.pointerId);
+    const dx = p.x-lastMid.x, dy = p.y-lastMid.y;
+    if(Math.abs(dx)+Math.abs(dy)>2) moved = true;
+    cam.x += dx; cam.y += dy;
+    lastMid = {x:p.x,y:p.y};
+    clampCam(); applayCam();
+  } else if(pointers.size===2){
+    const [a,b] = [...pointers.values()];
+    const mid = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+    const dist = Math.hypot(a.x-b.x, a.y-b.y);
+    if(lastDist>0) zoom2(mid, dist/lastDist);
+    lastMid = mid; lastDist = dist;
+    moved = true;
+  }
+});
+function zoom2(mid, f){
+  const r = stage.getBoundingClientRect();
+  zoomAt(mid.x-r.left, mid.y-r.top, f);
+}
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size===0){ stage.classList.remove("dragging"); lastDist = 0; }
+}
+stage.addEventListener("pointerup", endPointer);
+stage.addEventListener("pointercancel", endPointer);
+stage.addEventListener("wheel", e=>{
+  if(e.target.closest(".mapui")) return;
+  e.preventDefault(); stopTour();
+  const r = stage.getBoundingClientRect();
+  zoomAt(e.clientX-r.left, e.clientY-r.top, Math.exp(-e.deltaY*0.0016));
+},{passive:false});
+
+document.getElementById("zin").onclick = ()=>zoomAt(stage.clientWidth/2, stage.clientHeight/2, 1.3);
+document.getElementById("zout").onclick = ()=>zoomAt(stage.clientWidth/2, stage.clientHeight/2, 1/1.3);
+document.getElementById("zreset").onclick = ()=>{ stopTour(); fitTo(view.init); };
+
+/* Vista general / sector */
+const vSector = document.getElementById("vSector"), vGeneral = document.getElementById("vGeneral");
+vSector.onclick = ()=>{ stopTour(); vSector.classList.add("on"); vGeneral.classList.remove("on"); setView("sector"); };
+vGeneral.onclick = ()=>{ stopTour(); vGeneral.classList.add("on"); vSector.classList.remove("on"); setView("general"); };
+
+/* Recorrido guiado */
+const tourBtn = document.getElementById("tourBtn");
+const tourBtn2 = document.getElementById("tourBtn2");
+function startTour(){
+  if(tourOn){ stopTour(); return; }
+  tourOn = true; tourIdx = 1;
+  if(view.key!=="sector"){ vSector.classList.add("on"); vGeneral.classList.remove("on"); setView("sector"); }
+  tourBtn.classList.add("on"); tourBtn.textContent = "■ Detener recorrido";
+  if(tourBtn2) { tourBtn2.textContent = "■ Detener"; }
+  switchTab("mods");
+  stepTour();
+}
+function stepTour(){
+  if(!tourOn) return;
+  if(tourIdx>7){ stopTour(); fitTo(view.init); return; }
+  const m = MODULES[tourIdx-1];
+  selectModule(m.id,{fromTour:true});
+  panTo(m.sx, m.sy, Math.max(fitScale*2.6, fitScale+0.4));
+  tourTimer = setTimeout(()=>{ tourIdx++; stepTour(); }, 2400);
+}
+function stopTour(){
+  if(tourTimer){ clearTimeout(tourTimer); tourTimer = null; }
+  tourOn = false;
+  tourBtn.classList.remove("on"); tourBtn.textContent = "▶ Iniciar recorrido 1 → 7";
+  if(tourBtn2){ tourBtn2.textContent = "▶ Recorrer módulos"; }
+}
+tourBtn.onclick = startTour;
+if(tourBtn2) tourBtn2.onclick = startTour;
+document.getElementById("resetTour").onclick = ()=>{ stopTour(); fitTo(view.init); };
+
+/* Selección de módulo */
+function selectModule(id, o){
+  o = o || {};
+  const m = MODULES.find(x=>x.id===id);
+  if(!m) return;
+  document.querySelectorAll(".badge").forEach(b=>b.classList.toggle("active", +b.dataset.id===id));
+  document.querySelectorAll(".mcard").forEach(c=>{
+    const on = +c.dataset.id===id;
+    c.classList.toggle("open", on || c.classList.contains("open") && o.fromTour);
+  });
+  const card = document.querySelector(`.mcard[data-id="${id}"]`);
+  if(card && o.fromMap){
+    card.classList.add("open");
+    card.scrollIntoView({block:"nearest", behavior:"smooth"});
+    openSheet();
+  }
+  if(o.fromTour && card){ card.scrollIntoView({block:"nearest"}); }
+}
+
+/* Panel: pestañas + tarjetas */
+const tabBtns = {mods:document.getElementById("tabMods"), ruta:document.getElementById("tabRuta"), ficha:document.getElementById("tabFicha")};
+const bodies = {mods:document.getElementById("bodyMods"), ruta:document.getElementById("bodyRuta"), ficha:document.getElementById("bodyFicha")};
+function switchTab(k){
+  Object.keys(tabBtns).forEach(key=>{
+    tabBtns[key].classList.toggle("on", key===k);
+    bodies[key].hidden = key!==k;
+  });
+}
+tabBtns.mods.onclick = ()=>switchTab("mods");
+tabBtns.ruta.onclick = ()=>switchTab("ruta");
+tabBtns.ficha.onclick = ()=>switchTab("ficha");
+
+const modList = document.getElementById("modList");
+MODULES.forEach(m=>{
+  const c = document.createElement("div");
+  c.className = "mcard"; c.dataset.id = m.id;
+  c.innerHTML = `
+    <div class="mhead" role="button" tabindex="0" aria-expanded="false">
+      <span class="n" style="background:${m.color}">${m.id}</span>
+      <span class="ic">${m.icon}</span>
+      <h3>${m.nombre}</h3><span class="chev">▾</span>
+    </div>
+    <div class="mbody">
+      <div class="q">“${m.pregunta}”</div>
+      <p><b>Mensaje clave.</b> ${m.mensaje}</p>
+      <p><b>Qué hace el visitante.</b> ${m.interaccion}</p>
+      <p><b>Qué aprende.</b> ${m.aprende}</p>
+      <div class="chips">${m.chips.map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+    </div>`;
+  const head = c.querySelector(".mhead");
+  const toggle = ()=>{
+    c.classList.toggle("open");
+    head.setAttribute("aria-expanded", c.classList.contains("open"));
+    if(c.classList.contains("open")) selectModule(m.id,{});
+    panTo(m.sx, m.sy, Math.max(cam.s, fitScale*1.6));
+  };
+  head.addEventListener("click", toggle);
+  head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();} });
+  modList.appendChild(c);
+});
+
+/* Hoja móvil */
+const panel = document.getElementById("panel");
+const sheetBtn = document.getElementById("sheetBtn");
+function openSheet(){ if(window.matchMedia("(max-width:980px)").matches) panel.classList.add("open"); }
+sheetBtn.onclick = ()=>{
+  panel.classList.toggle("open");
+  sheetBtn.textContent = panel.classList.contains("open") ? "Ocultar panel" : "Ver módulos 1 – 7";
+};
+
+window.addEventListener("resize", ()=>{ clampCam(); applayCam(); });
+
+/* Hint breve */
+const hint = document.getElementById("hint");
+setTimeout(()=>hint.classList.add("show"), 600);
+setTimeout(()=>hint.classList.remove("show"), 5200);
+
+/* PDF / impresión */
+document.getElementById("printBtn").onclick = ()=>window.print();
+
+/* ======== Documento imprimible (una sola fuente de datos) ======== */
+function buildPrintDoc(){
+  const doc = document.getElementById("printDoc");
+  const mapW = 718, mapH = Math.round(718*2/3);
+  const proj = {w:mapW, h:mapH, px:(fx,fy)=>[fx*mapW, fy*mapH]};
+  const fichaRows = MODULES.map(m=>`
+    <div class="pf">
+      <div class="pf-h"><span class="pf-n" style="background:${m.color}">${m.id}</span>
+        <span class="pf-ic">${m.icon}</span><h4>${m.nombre}</h4></div>
+      <p class="pf-q">“${m.pregunta}”</p>
+      <p><b>Mensaje clave.</b> ${m.mensaje}</p>
+      <p><b>Interacción.</b> ${m.interaccion}</p>
+      <p><b>Aprendizaje.</b> ${m.aprende}</p>
+      <p class="pf-chips">${m.chips.join(" · ")}</p>
+    </div>`).join("");
+  doc.innerHTML = `
+    <div class="pdoc">
+      <header>
+        <h1>${PROJECT.nombre}</h1>
+        <p>${PROJECT.sub}</p>
+      </header>
+      <section class="pintro">
+        <h2>Propuesta de espacio, recorrido y distribución</h2>
+        <p>Bucle de recorrido de ≈250 m en el sector de entrada del Jardín Botánico &amp; Arboretum (UTalca), con 7 módulos interactivos de 2,5 × 2,5 m ubicados <b>a los costados del camino</b>. Los ejes peatonales se mantienen libres (ancho útil mayor a 3 m) y se conserva el acceso a baños, administración y estacionamiento. Los módulos 1 a 3 acompañan el sendero del arroyo; el 4 se ubica junto al sector de servicios; el 5 y 6 en el camino oriente junto a la laguna de juegos; y el 7 cierra el recorrido frente a administración, a pasos de la salida.</p>
+      </section>
+      <div class="pdocmap" id="printMapWrap" style="width:${mapW}px;height:${mapH}px">
+        <img src="assets/sector_entrada.jpg" alt="Plano del sector de entrada del Jardín Botánico UTalca con los 7 módulos">
+      </div>
+      <div class="plegend">
+        <span><b>●</b> Módulo interactivo (1 a 7, orden de visita)</span>
+        <span><b>┄</b> Recorrido sugerido (bucle)</span>
+        <span><b>▨</b> Zona de stands (sector de entrada)</span>
+        <span>Base: mapa oficial Jardín Botánico &amp; Arboretum UTalca · esquema referencial, no a escala</span>
+      </div>
+      <h2 class="psec">Fichas por módulo — guión museográfico preliminar</h2>
+      <div class="pgrid">${fichaRows}</div>
+      <footer>
+        <p>Mapa interactivo de esta propuesta: <b>${PROJECT.urlPublica}</b></p>
+        <p>Documento preliminar para postulación · ${new Date().toLocaleDateString("es-CL",{year:"numeric",month:"long",day:"numeric"})}</p>
+      </footer>
+    </div>`;
+  const wrap = doc.querySelector("#printMapWrap");
+  buildOverlay(wrap, proj, {interactive:false, invScale:false});
+}
+buildPrintDoc();
+
+/* init */
+const qs = new URLSearchParams(location.search);
+if(qs.get("printpreview")==="1") document.body.classList.add("printpreview");
+if(qs.get("view")==="general"){ vGeneral.classList.add("on"); vSector.classList.remove("on"); setView("general"); }
+else setView("sector");
+window.addEventListener("load", ()=>{
+  fitTo(view.init);
+  const m = parseInt(qs.get("mod")||"0",10);
+  if(m>0 && MODULES.some(x=>x.id===m)) selectModule(m,{fromMap:true});
+  const t = qs.get("tab");
+  if(t && tabBtns[t]) switchTab(t);
+  if(qs.get("tour")==="1") startTour();
+});
+</script>
+</body>
+</html>
